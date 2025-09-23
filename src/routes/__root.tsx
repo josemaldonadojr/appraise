@@ -2,11 +2,11 @@ import * as React from 'react'
 import {
   Outlet,
   createRootRouteWithContext,
-  useRouteContext, 
+  useRouteContext,
+  HeadContent,
+  Scripts,
 } from '@tanstack/react-router'
 import {
-  Meta,
-  Scripts,
   createServerFn, 
 } from '@tanstack/react-start'
 import { QueryClient } from '@tanstack/react-query'
@@ -50,6 +50,7 @@ export const Route = createRootRouteWithContext<{
       { rel: 'icon', href: '/favicon.ico' },
     ],
   }),
+  notFoundComponent: () => <div>Route not found</div>,
   beforeLoad: async (ctx) => {
     // all queries, mutations and action made with TanStack Query will be
     // authenticated by an identity token.
@@ -84,7 +85,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
       <head>
-        <Meta />
+        <HeadContent />
       </head>
       <body className="bg-neutral-950 text-neutral-50">
         {children}
