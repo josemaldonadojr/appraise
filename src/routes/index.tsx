@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Signup } from '@/components/signup'
+import { SignIn } from '~/components/SignIn'
 import {
   Authenticated,
   Unauthenticated,
@@ -17,7 +17,7 @@ function Home() {
           <div>Authenticated</div>
         </Authenticated>
         <Unauthenticated>
-          <Signup />
+          <SignIn />
         </Unauthenticated>
         <AuthLoading>
           <div>AuthLoading</div>

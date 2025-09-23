@@ -10,7 +10,7 @@ const handleGoogleSignIn = async () => {
   )
 }
 
-export function Signup() {
+export function SignIn() {
   return (
     <div className="min-h-screen bg-[#ffffff] flex">
       <div className="w-1/2 flex flex-col justify-center items-center px-12 py-8">
@@ -46,27 +46,6 @@ export function Signup() {
                 />
               </svg>
               Continue with Google
-            </Button>
-
-            <div className="flex flex-col items-start gap-1 w-full">
-              <label
-                htmlFor="email"
-                className="text-[#646464] text-[15px] font-normal leading-[18px] tracking-[-0.026px]"
-              >
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="name@work-email.com"
-                className="w-full h-[28px] px-2 py-1 bg-[#ffffff] border border-[#bbbbbb] rounded-[2px] text-[13px] font-normal leading-[19px] text-[#bbbbbb] placeholder:text-[#bbbbbb] focus:outline-none focus:ring-1 focus:ring-[#202020] focus:border-[#202020] shadow-[0px_1px_1px_rgba(0,0,0,0.06)]"
-              />
-            </div>
-            <Button
-              variant="outline"
-              className="w-full h-[31px] bg-[#ffffff] border border-[#bbbbbb] text-[#202020] hover:bg-[#fcfcfc] rounded-full px-[82px] py-[6px] text-[13px] font-medium leading-[19px] text-center shadow-[0px_1px_1px_rgba(0,0,0,0.06)]"
-            >
-              Continue with email
             </Button>
           </div>
 
