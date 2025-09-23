@@ -1,5 +1,14 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { authClient } from '@/lib/auth-client'
+
+const handleGoogleSignIn = async () => {
+  await authClient.signIn.social(
+    {
+      provider: 'google',
+    },
+  )
+}
 
 export function Signup() {
   return (
@@ -17,7 +26,7 @@ export function Signup() {
             </h1>
           </div>
           <div className="flex flex-col items-center gap-4 w-[288px]">
-            <Button className="w-full h-[31px] bg-[#202020] hover:bg-[#202020]/90 text-[#fcfcfc] rounded-full px-[65px] py-[6px] flex items-center justify-center gap-[6px] text-[13px] font-medium leading-[19px] tracking-[-0.026px]">
+            <Button onClick={handleGoogleSignIn} className="w-full h-[31px] bg-[#202020] hover:bg-[#202020]/90 text-[#fcfcfc] rounded-full px-[65px] py-[6px] flex items-center justify-center gap-[6px] text-[13px] font-medium leading-[19px] tracking-[-0.026px]">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
