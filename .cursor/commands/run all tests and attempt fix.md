@@ -1,0 +1,1 @@
+Run tests with `bun tests` and try to fix any issues that occur. Ask user when more input is needed or if you can't resolve issue with 3 attempts.
