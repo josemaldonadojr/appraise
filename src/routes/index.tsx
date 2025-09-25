@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { SignIn } from '~/components/SignIn'
+import { CustomizationCard } from '~/components/CustomizationCard'
 import {
   Authenticated,
   Unauthenticated,
@@ -12,16 +13,18 @@ export const Route = createFileRoute('/')({
 
 function Home() {
   return (
-    <>
-        <Authenticated>
-          <div>Authenticated</div>
-        </Authenticated>
-        <Unauthenticated>
-          <SignIn />
-        </Unauthenticated>
-        <AuthLoading>
-          <div>AuthLoading</div>
-        </AuthLoading>
-    </>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Authenticated>
+        <CustomizationCard />
+      </Authenticated>
+      <Unauthenticated>
+        <SignIn />
+      </Unauthenticated>
+      <AuthLoading>
+        <div className="flex items-center justify-center">
+          <div className="text-lg">Loading...</div>
+        </div>
+      </AuthLoading>
+    </div>
   )
 }
