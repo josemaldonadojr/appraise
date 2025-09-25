@@ -50,9 +50,19 @@ export function OnboardingStep({
   };
 
   return (
-    <div className={`bg-white content-stretch flex items-start relative rounded-[2px] size-full ${className}`}>
-      {/* Left Panel */}
-      <div className="box-border content-stretch flex flex-col h-full items-center justify-between p-[40px] relative shrink-0 w-[390px]">
+    <div className={`relative content-stretch flex items-start rounded-[2px] size-full overflow-hidden ${className}`}>
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-100">
+        {/* Subtle texture overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.02)_0%,transparent_70%)]"></div>
+        {/* Very subtle diagonal lines */}
+        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_48%,rgba(0,0,0,0.01)_49%,rgba(0,0,0,0.01)_51%,transparent_52%)] bg-[size:40px_40px]"></div>
+      </div>
+      
+      {/* Content Container */}
+      <div className="relative z-10 bg-white content-stretch flex items-start rounded-[2px] size-full">
+        {/* Left Panel */}
+        <div className="box-border content-stretch flex flex-col h-full items-center justify-between p-[40px] relative shrink-0 w-[390px]">
         <div className="content-stretch flex flex-col gap-[24px] items-center relative shrink-0 w-full">
           {showBackButton && currentStep > 1 && (
             <div className="content-stretch flex items-center relative shrink-0 w-full">
@@ -85,10 +95,11 @@ export function OnboardingStep({
         </div>
       </div>
 
-      {/* Right Panel */}
-      <div className={`box-border content-stretch flex flex-col h-full items-center justify-between p-[64px] relative shrink-0 w-[460px] ${currentStep === 3 ? 'bg-[#202020]' : 'bg-[#ebebeb]'}`}>
-        <div className="content-stretch flex flex-col gap-[24px] items-center relative shrink-0 w-full">
-          {children}
+        {/* Right Panel */}
+        <div className={`box-border content-stretch flex flex-col h-full items-center justify-between p-[64px] relative shrink-0 w-[460px] ${currentStep === 3 ? 'bg-[#202020]' : 'bg-[#ebebeb]'}`}>
+          <div className="content-stretch flex flex-col gap-[24px] items-center relative shrink-0 w-full">
+            {children}
+          </div>
         </div>
       </div>
     </div>
