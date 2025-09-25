@@ -7,6 +7,7 @@ export interface OnboardingData {
     companyName: string;
     companyType: string;
     companySize: string;
+    appraisals: string;
     teammates: string;
     goals: string[];
 }
@@ -30,6 +31,7 @@ const initialData: OnboardingData = {
     companyName: '',
     companyType: '',
     companySize: '',
+    appraisals: '',
     teammates: '',
     goals: []
 };

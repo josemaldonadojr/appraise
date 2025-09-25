@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'motion/react';
 import { InputField } from './InputField';
 import { Select } from './ui/select';
@@ -37,7 +37,7 @@ export function CompanyInfoForm() {
     lastName: 'Doe',
     companyName: 'Veterans United Home Loans',
     companyType: '',
-    companySize: '',
+    appraisals: '',
     teammates: ''
   });
   
@@ -131,7 +131,7 @@ export function CompanyInfoForm() {
         />
       </motion.div>
 
-      {/* Company Size */}
+      {/* Appraisals */}
       <motion.div 
         className="content-stretch flex flex-col gap-1 h-[50px] items-start relative shrink-0 w-full"
         variants={itemVariants}
@@ -146,8 +146,8 @@ export function CompanyInfoForm() {
             { value: '201-500', label: '201-500 appraisals' },
             { value: '500+', label: '500+ appraisals' },
           ]}
-          value={data.companySize}
-          onChange={(value) => handleInputChange('companySize', value)}
+          value={data.appraisals}
+          onChange={(value) => handleInputChange('appraisals', value)}
           className="h-[50px]"
         />
       </motion.div>
