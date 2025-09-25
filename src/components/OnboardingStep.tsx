@@ -54,7 +54,7 @@ export function OnboardingStep({
       {/* Left Panel */}
       <div className="box-border content-stretch flex flex-col h-full items-center justify-between p-[40px] relative shrink-0 w-[390px]">
         <div className="content-stretch flex flex-col gap-[24px] items-center relative shrink-0 w-full">
-          {showBackButton && (
+          {showBackButton && currentStep > 1 && (
             <div className="content-stretch flex items-center relative shrink-0 w-full">
               <BackLink onClick={handleBack} />
             </div>
