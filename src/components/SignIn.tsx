@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { authClient } from '@/lib/auth-client'
+import { motion } from 'motion/react'
 
 const handleGoogleSignIn = async () => {
   await authClient.signIn.social(
@@ -54,8 +55,84 @@ export function SignIn() {
           </p>
         </div>
       </div>
-      <div className="w-1/2 bg-[#ebebeb] relative">
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center justify-center gap-8 w-[720px] h-8 px-[237px]">
+      <div className="w-1/2 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative flex items-center justify-center p-8">
+        {/* Subtle background elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-slate-700/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-slate-600/15 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div className="relative z-10 max-w-md">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-white mb-8"
+          >
+            <h2 className="text-2xl font-medium mb-4">Why choose Appraise?</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Join thousands of mortgage professionals who have streamlined their appraisal ordering process.
+            </p>
+          </motion.div>
+          
+          <motion.div 
+            className="space-y-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <motion.div 
+              className="flex items-start gap-3"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, delay: 0.6 }}
+            >
+              <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M13.5 4.5L6 12L2.5 8.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-white font-medium mb-1">Streamlined Workflow</h3>
+                <p className="text-slate-300 text-sm">Reduce appraisal ordering time by 70% with our automated processes</p>
+              </div>
+            </motion.div>
+            
+            <motion.div 
+              className="flex items-start gap-3"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, delay: 0.8 }}
+            >
+              <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 1L10.5 6.5L16 8L10.5 9.5L8 15L5.5 9.5L0 8L5.5 6.5L8 1Z" fill="white"/>
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-white font-medium mb-1">Premium Features</h3>
+                <p className="text-slate-300 text-sm">Access bulk ordering, property enrichment, and advanced analytics</p>
+              </div>
+            </motion.div>
+            
+            <motion.div 
+              className="flex items-start gap-3"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, delay: 1.0 }}
+            >
+              <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 0C3.58 0 0 3.58 0 8C0 12.42 3.58 16 8 16C12.42 16 16 12.42 16 8C16 3.58 12.42 0 8 0ZM8 14C4.69 14 2 11.31 2 8C2 4.69 4.69 2 8 2C11.31 2 14 4.69 14 8C14 11.31 11.31 14 8 14Z" fill="white"/>
+                  <path d="M8 4C5.79 4 4 5.79 4 8C4 10.21 5.79 12 8 12C10.21 12 12 10.21 12 8C12 5.79 10.21 4 8 4Z" fill="white"/>
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-white font-medium mb-1">Trusted Network</h3>
+                <p className="text-slate-300 text-sm">Connect with vetted, certified appraisers across all major markets</p>
+              </div>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
     </div>
