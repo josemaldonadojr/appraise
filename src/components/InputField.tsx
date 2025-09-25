@@ -26,7 +26,7 @@ export function InputField({
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
           placeholder={placeholder}
-          className="flex-1 font-['Inter:Regular',_sans-serif] font-normal text-[#bbbbbb] text-[13px] leading-[19px] bg-transparent border-none outline-none placeholder:text-[#bbbbbb]"
+          className="flex-1 font-['Inter:Regular',_sans-serif] font-normal text-[#202020] text-[13px] leading-[19px] bg-transparent border-none outline-none placeholder:text-[#bbbbbb]"
         />
       </div>
     </div>
