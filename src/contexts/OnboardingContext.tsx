@@ -34,7 +34,7 @@ const initialData: OnboardingData = {
     goals: []
 };
 
-export function OnboardingProvider({ children, totalSteps = 5 }: { children: ReactNode; totalSteps?: number }) {
+export function OnboardingProvider({ children, totalSteps = 3 }: { children: ReactNode; totalSteps?: number }) {
     const [currentStep, setCurrentStep] = useState(1);
     const [data, setData] = useState<OnboardingData>(initialData);
 

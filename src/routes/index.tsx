@@ -20,7 +20,7 @@ function Home() {
         <div className="space-y-8">
           {/* Onboarding Flow Example */}
           <div className="w-[850px] h-[600px] border border-gray-200 rounded-lg overflow-hidden">
-            <OnboardingProvider totalSteps={5}>
+            <OnboardingProvider totalSteps={3}>
               <CustomizationForm />
             </OnboardingProvider>
           </div>

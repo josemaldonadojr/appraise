@@ -86,7 +86,7 @@ export function OnboardingStep({
       </div>
 
       {/* Right Panel */}
-      <div className="bg-[#ebebeb] box-border content-stretch flex flex-col h-full items-center justify-between p-[64px] relative shrink-0 w-[460px]">
+      <div className={`box-border content-stretch flex flex-col h-full items-center justify-between p-[64px] relative shrink-0 w-[460px] ${currentStep === 3 ? 'bg-[#202020]' : 'bg-[#ebebeb]'}`}>
         <div className="content-stretch flex flex-col gap-[24px] items-center relative shrink-0 w-full">
           {children}
         </div>
