@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { InputField } from './InputField';
 import { Select } from './ui/select';
 import { useOnboardingOptional } from '~/contexts/OnboardingContext';
@@ -49,10 +50,41 @@ export function CompanyInfoForm() {
     updateData({ [field]: value });
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut"
+      }
+    }
+  };
+
   return (
-    <div className="content-stretch flex flex-col gap-6 items-center relative shrink-0 w-full">
+    <motion.div 
+      className="content-stretch flex flex-col gap-6 items-center relative shrink-0 w-full"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {/* Name Fields */}
-      <div className="content-stretch flex gap-2 items-start justify-center relative shrink-0 w-full">
+      <motion.div 
+        className="content-stretch flex gap-2 items-start justify-center relative shrink-0 w-full"
+        variants={itemVariants}
+      >
         <div className="content-stretch flex flex-[1_0_0] flex-col gap-1 items-start min-h-px min-w-px relative self-stretch shrink-0">
           <InputField
             label="First name"
@@ -69,20 +101,26 @@ export function CompanyInfoForm() {
             className="h-[50px]"
           />
         </div>
-      </div>
+      </motion.div>
 
       {/* Company Name */}
-      <div className="content-stretch flex flex-col gap-1 h-[50px] items-start relative shrink-0 w-full">
+      <motion.div 
+        className="content-stretch flex flex-col gap-1 h-[50px] items-start relative shrink-0 w-full"
+        variants={itemVariants}
+      >
         <InputField
           label="What is your company name?"
           value={data.companyName}
           onChange={(value) => handleInputChange('companyName', value)}
           className="h-[50px]"
         />
-      </div>
+      </motion.div>
 
       {/* Company Type */}
-      <div className="content-stretch flex flex-col gap-1 h-[50px] items-start relative shrink-0 w-full">
+      <motion.div 
+        className="content-stretch flex flex-col gap-1 h-[50px] items-start relative shrink-0 w-full"
+        variants={itemVariants}
+      >
         <Select
           label="What type of company do you work for?"
           placeholder="Select answer"
@@ -91,10 +129,13 @@ export function CompanyInfoForm() {
           onChange={(value) => handleInputChange('companyType', value)}
           className="h-[50px]"
         />
-      </div>
+      </motion.div>
 
       {/* Company Size */}
-      <div className="content-stretch flex flex-col gap-1 h-[50px] items-start relative shrink-0 w-full">
+      <motion.div 
+        className="content-stretch flex flex-col gap-1 h-[50px] items-start relative shrink-0 w-full"
+        variants={itemVariants}
+      >
         <Select
           label="How many appraisals do you typically order per month?"
           placeholder="Select answer"
@@ -109,10 +150,13 @@ export function CompanyInfoForm() {
           onChange={(value) => handleInputChange('companySize', value)}
           className="h-[50px]"
         />
-      </div>
+      </motion.div>
 
       {/* Teammates */}
-      <div className="content-stretch flex flex-col gap-1 h-[50px] items-start relative shrink-0 w-full">
+      <motion.div 
+        className="content-stretch flex flex-col gap-1 h-[50px] items-start relative shrink-0 w-full"
+        variants={itemVariants}
+      >
         <Select
           label="How many team members will be ordering appraisals?"
           placeholder="Select answer"
@@ -121,7 +165,7 @@ export function CompanyInfoForm() {
           onChange={(value) => handleInputChange('teammates', value)}
           className="h-[50px]"
         />
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

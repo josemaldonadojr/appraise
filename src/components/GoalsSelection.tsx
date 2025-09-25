@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { PillButton } from './ui/pill-button';
 import { useOnboardingOptional } from '~/contexts/OnboardingContext';
 
@@ -32,18 +33,53 @@ export function GoalsSelection() {
     updateData({ goals: newGoals });
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+        delayChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut"
+      }
+    }
+  };
+
   return (
-    <div className="content-stretch flex flex-col gap-4 items-start relative shrink-0 w-full">
-      {goalOptions.map((goal) => (
-        <PillButton
+    <motion.div 
+      className="content-stretch flex flex-col gap-4 items-start relative shrink-0 w-full"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {goalOptions.map((goal, index) => (
+        <motion.div
           key={goal}
-          selected={data.goals?.includes(goal) || false}
-          onClick={() => handleGoalToggle(goal)}
+          variants={itemVariants}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           className="w-full"
         >
-          {goal}
-        </PillButton>
+          <PillButton
+            selected={data.goals?.includes(goal) || false}
+            onClick={() => handleGoalToggle(goal)}
+            className="w-full"
+          >
+            {goal}
+          </PillButton>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 }

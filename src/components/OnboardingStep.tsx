@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { BackLink } from './BackLink';
 import { ProgressIndicator } from './ProgressIndicator';
 import { Button } from './ui/button';
@@ -50,7 +51,12 @@ export function OnboardingStep({
   };
 
   return (
-    <div className={`relative content-stretch flex items-start rounded-[2px] size-full overflow-hidden ${className}`}>
+    <motion.div 
+      className={`relative content-stretch flex items-start rounded-[2px] size-full overflow-hidden ${className}`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-100">
         {/* Subtle texture overlay */}
@@ -62,46 +68,110 @@ export function OnboardingStep({
       {/* Content Container */}
       <div className="relative z-10 bg-white content-stretch flex items-start rounded-[2px] size-full">
         {/* Left Panel */}
-        <div className="box-border content-stretch flex flex-col h-full items-center justify-between p-[40px] relative shrink-0 w-[390px]">
+        <motion.div 
+          className="box-border content-stretch flex flex-col h-full items-center justify-between p-[40px] relative shrink-0 w-[390px]"
+          initial={{ x: -20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+        >
         <div className="content-stretch flex flex-col gap-[24px] items-center relative shrink-0 w-full">
-          {showBackButton && currentStep > 1 && (
-            <div className="content-stretch flex items-center relative shrink-0 w-full">
-              <BackLink onClick={handleBack} />
-            </div>
-          )}
-          
-          <div className="content-stretch flex flex-col gap-[16px] items-center leading-[0] not-italic relative shrink-0 tracking-[-0.026px] w-full">
-            <div className="flex flex-col font-['Uxum_Grotesque:Medium',_sans-serif] justify-center relative shrink-0 text-[#202020] text-[32px] w-full">
-              <p className="leading-[35.2px] whitespace-pre-wrap">{title}</p>
-            </div>
-            {subtitle && (
-              <div className="flex flex-col font-['Inter:Regular',_sans-serif] font-normal justify-center relative shrink-0 text-[#646464] text-[15px] w-full">
-                <p className="leading-[18px] whitespace-pre-wrap">{subtitle}</p>
-              </div>
+          <AnimatePresence mode="wait">
+            {showBackButton && currentStep > 1 && (
+              <motion.div 
+                className="content-stretch flex items-center relative shrink-0 w-full"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <BackLink onClick={handleBack} />
+              </motion.div>
             )}
-          </div>
+          </AnimatePresence>
+          
+          <motion.div 
+            className="content-stretch flex flex-col gap-[16px] items-center leading-[0] not-italic relative shrink-0 tracking-[-0.026px] w-full"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+          >
+            <motion.div 
+              className="flex flex-col font-['Uxum_Grotesque:Medium',_sans-serif] justify-center relative shrink-0 text-[#202020] text-[32px] w-full"
+              key={title} // This ensures title animates when it changes
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <p className="leading-[35.2px] whitespace-pre-wrap">{title}</p>
+            </motion.div>
+            {subtitle && (
+              <motion.div 
+                className="flex flex-col font-['Inter:Regular',_sans-serif] font-normal justify-center relative shrink-0 text-[#646464] text-[15px] w-full"
+                key={subtitle} // This ensures subtitle animates when it changes
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
+              >
+                <p className="leading-[18px] whitespace-pre-wrap">{subtitle}</p>
+              </motion.div>
+            )}
+          </motion.div>
         </div>
         
-        <div className="content-stretch flex flex-col gap-[16px] items-center relative shrink-0 w-full">
+        <motion.div 
+          className="content-stretch flex flex-col gap-[16px] items-center relative shrink-0 w-full"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+        >
           {showNextButton && (
-            <Button 
-              onClick={handleNext}
-              className="bg-[#202020] hover:bg-[#202020]/90 text-[#fcfcfc] px-[16px] py-[6px] rounded-[9999px] w-full font-['Inter:Medium',_sans-serif] font-medium text-[13px] tracking-[-0.026px]"
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full"
             >
-              {nextButtonText}
-            </Button>
+              <Button 
+                onClick={handleNext}
+                className="bg-[#202020] hover:bg-[#202020]/90 text-[#fcfcfc] px-[16px] py-[6px] rounded-[9999px] w-full font-['Inter:Medium',_sans-serif] font-medium text-[13px] tracking-[-0.026px]"
+              >
+                {nextButtonText}
+              </Button>
+            </motion.div>
           )}
           <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
         {/* Right Panel */}
-        <div className={`box-border content-stretch flex flex-col h-full items-center justify-between p-[64px] relative shrink-0 w-[460px] ${currentStep === 3 ? 'bg-[#202020]' : 'bg-[#ebebeb]'}`}>
-          <div className="content-stretch flex flex-col gap-[24px] items-center relative shrink-0 w-full">
-            {children}
-          </div>
-        </div>
+        <motion.div 
+          className={`box-border content-stretch flex flex-col h-full items-center justify-between p-[64px] relative shrink-0 w-[460px] ${currentStep === 3 ? 'bg-[#202020]' : 'bg-[#ebebeb]'}`}
+          initial={{ x: 20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+        >
+          <motion.div 
+            className="content-stretch flex flex-col gap-[24px] items-center relative shrink-0 w-full"
+            key={currentStep} // This ensures content animates when step changes
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentStep}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="w-full"
+              >
+                {children}
+              </motion.div>
+            </AnimatePresence>
+          </motion.div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import { InfoCard } from './InfoCard';
 
 // Icons for the premium features
@@ -70,14 +71,52 @@ const premiumFeatures = [
 ];
 
 export function PremiumTrialStep() {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.4,
+        ease: "easeOut"
+      }
+    }
+  };
+
   return (
-    <div className="content-stretch flex flex-col gap-[16px] items-start relative shrink-0 w-full">
+    <motion.div 
+      className="content-stretch flex flex-col gap-[16px] items-start relative shrink-0 w-full"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {premiumFeatures.map((feature, index) => (
-        <div key={index} className="content-stretch flex flex-col gap-[16px] items-center relative shrink-0 w-full">
+        <motion.div 
+          key={index} 
+          className="content-stretch flex flex-col gap-[16px] items-center relative shrink-0 w-full"
+          variants={itemVariants}
+          whileHover={{ scale: 1.02 }}
+          transition={{ duration: 0.2 }}
+        >
           <div className="content-stretch flex gap-[8px] items-center relative shrink-0 w-full">
-            <div className="relative shrink-0 size-[16px]">
+            <motion.div 
+              className="relative shrink-0 size-[16px]"
+              whileHover={{ rotate: 5 }}
+              transition={{ duration: 0.2 }}
+            >
               {feature.icon}
-            </div>
+            </motion.div>
             <div className="content-stretch flex flex-[1_0_0] flex-col font-['Inter:Regular',_sans-serif] font-normal gap-[4px] items-start justify-center leading-[0] min-h-px min-w-px not-italic relative shrink-0 tracking-[-0.026px]">
               <div className="flex flex-col justify-center relative shrink-0 text-[15px] text-white w-full">
                 <p className="leading-[18px] whitespace-pre-wrap">{feature.title}</p>
@@ -87,8 +126,8 @@ export function PremiumTrialStep() {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 }
