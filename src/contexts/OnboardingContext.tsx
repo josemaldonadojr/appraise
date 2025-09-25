@@ -25,9 +25,9 @@ interface OnboardingContextType {
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
 
 const initialData: OnboardingData = {
-    firstName: 'John',
-    lastName: 'Doe',
-    companyName: 'Veterans United',
+    firstName: '',
+    lastName: '',
+    companyName: '',
     companyType: '',
     companySize: '',
     teammates: '',
