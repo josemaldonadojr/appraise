@@ -1,16 +1,17 @@
 import * as React from "react"
 import { cn } from "~/lib/utils"
 
-export interface BackLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+export interface BackLinkProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children?: React.ReactNode
 }
 
-const BackLink = React.forwardRef<HTMLAnchorElement, BackLinkProps>(
+const BackLink = React.forwardRef<HTMLButtonElement, BackLinkProps>(
   ({ className, children = "Back", ...props }, ref) => {
     return (
-      <a
+      <button
+        type="button"
         className={cn(
-          "inline-flex items-center gap-2 text-[#646464] text-[13px] leading-[18px] tracking-[-0.026px] hover:text-[#202020] transition-colors",
+          "inline-flex items-center gap-2 text-[#646464] text-[13px] leading-[18px] tracking-[-0.026px] hover:text-[#202020] transition-colors bg-transparent border-none cursor-pointer",
           className
         )}
         ref={ref}
@@ -40,7 +41,7 @@ const BackLink = React.forwardRef<HTMLAnchorElement, BackLinkProps>(
           />
         </svg>
         <span className="whitespace-nowrap">{children}</span>
-      </a>
+      </button>
     )
   }
 )
