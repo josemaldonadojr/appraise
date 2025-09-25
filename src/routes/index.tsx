@@ -6,6 +6,8 @@ import { FeatureListExample } from '~/components/FeatureListExample';
 import { InputFieldExample } from '~/components/InputFieldExample';
 import { SelectExample } from '~/components/SelectExample';
 import { CustomizationFormExample } from '~/components/CustomizationFormExample';
+import { OnboardingProvider } from '~/contexts/OnboardingContext';
+import { CustomizationForm } from '~/components/CustomizationForm';
 
 
 export const Route = createFileRoute('/')({
@@ -16,16 +18,12 @@ function Home() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="space-y-8">
-          <PillButtonExample />
-          <LinkExample />
-          <ProgressIndicator
-            currentStep={2}
-            totalSteps={5}
-          />
-          <FeatureListExample />
-          <InputFieldExample />
-          <SelectExample />
-          <CustomizationFormExample />
+          {/* Onboarding Flow Example */}
+          <div className="w-[850px] h-[600px] border border-gray-200 rounded-lg overflow-hidden">
+            <OnboardingProvider totalSteps={5}>
+              <CustomizationForm />
+            </OnboardingProvider>
+          </div>
         </div>
     </div>
   )

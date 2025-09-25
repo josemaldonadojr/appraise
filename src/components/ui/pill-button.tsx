@@ -1,74 +1,64 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "~/lib/utils"
+import React from 'react';
+import { cn } from '~/lib/utils';
 
-const pillButtonVariants = cva(
-  "inline-flex items-center gap-2 whitespace-nowrap rounded-full transition-all disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-  {
-    variants: {
-      variant: {
-        default: "bg-white text-[#202020] shadow-[0px_1px_1px_0px_rgba(0,0,0,0.06)] hover:shadow-[0px_2px_2px_0px_rgba(0,0,0,0.08)]",
-        outline: "bg-transparent text-[#202020] border border-[#bbbbbb] hover:bg-gray-50",
-        ghost: "bg-transparent text-[#202020] hover:bg-gray-100",
-      },
-      size: {
-        default: "px-4 py-2 text-sm",
-        sm: "px-3 py-1.5 text-xs",
-        lg: "px-6 py-3 text-base",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  }
-)
-
-const pillButtonIconVariants = cva(
-  "rounded-full shrink-0",
-  {
-    variants: {
-      size: {
-        default: "size-4",
-        sm: "size-3",
-        lg: "size-5",
-      },
-    },
-    defaultVariants: {
-      size: "default",
-    },
-  }
-)
-
-export interface PillButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof pillButtonVariants> {
-  icon?: React.ReactNode
-  children: React.ReactNode
+export interface PillButtonProps {
+  children: React.ReactNode;
+  selected?: boolean;
+  onClick?: () => void;
+  className?: string;
+  disabled?: boolean;
 }
 
-const PillButton = React.forwardRef<HTMLButtonElement, PillButtonProps>(
-  ({ className, variant, size, icon, children, ...props }, ref) => {
-    return (
-      <button
-        className={cn(pillButtonVariants({ variant, size, className }))}
-        ref={ref}
-        {...props}
-      >
-        {icon && (
-          <div className={cn(pillButtonIconVariants({ size }))}>
-            <div className="relative size-full rounded-full bg-white border border-[#bbbbbb] shadow-[0px_1px_1px_0px_rgba(0,0,0,0.06)]">
-              <div className="absolute inset-0 flex items-center justify-center">
-                {icon}
-              </div>
-            </div>
+export function PillButton({ 
+  children, 
+  selected = false, 
+  onClick, 
+  className = "",
+  disabled = false 
+}: PillButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "bg-white box-border content-stretch flex gap-2 items-center pl-2 pr-4 py-2 relative rounded-[9999px] shadow-[0px_1px_1px_0px_rgba(0,0,0,0.06)] shrink-0 w-full",
+        "hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.1)] transition-all duration-150",
+        "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1",
+        selected && "ring-2 ring-[#202020] ring-offset-1",
+        disabled && "opacity-50 cursor-not-allowed",
+        className
+      )}
+    >
+      <div className={cn(
+        "bg-white relative rounded-[9999px] shrink-0 size-4",
+        "border border-[#bbbbbb] shadow-[0px_1px_1px_0px_rgba(0,0,0,0.06)]",
+        selected && "bg-[#202020] border-[#202020]"
+      )}>
+        {selected && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <svg
+              width="8"
+              height="8"
+              viewBox="0 0 8 8"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="text-white"
+            >
+              <path
+                d="M6.5 2.5L3 6L1.5 4.5"
+                stroke="currentColor"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </div>
         )}
-        <span className="font-normal leading-[19px]">{children}</span>
-      </button>
-    )
-  }
-)
-PillButton.displayName = "PillButton"
-
-export { PillButton, pillButtonVariants }
+      </div>
+      <div className="flex flex-col font-['Inter:Regular',_sans-serif] font-normal justify-center leading-0 not-italic relative shrink-0 text-[#202020] text-[13px] text-center whitespace-nowrap">
+        <p className="leading-[19px]">{children}</p>
+      </div>
+    </button>
+  );
+}
