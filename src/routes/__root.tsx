@@ -7,7 +7,7 @@ import {
   Scripts,
 } from '@tanstack/react-router'
 import {
-  createServerFn, 
+  createServerFn,
 } from '@tanstack/react-start'
 import { QueryClient } from '@tanstack/react-query'
 import appCss from '@/styles/app.css?url'
@@ -88,7 +88,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="bg-neutral-950 text-neutral-50">
-        {children}
+        <div className="root">
+          {children}
+        </div>
         <Scripts />
       </body>
     </html>

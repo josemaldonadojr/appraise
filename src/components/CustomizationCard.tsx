@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import AppSelect, { type SelectOption } from './AppSelect';
 
 export function CustomizationCard() {
   const [formData, setFormData] = useState({
@@ -17,6 +17,34 @@ export function CustomizationCard() {
       [field]: value
     }));
   };
+
+  const companyTypeOptions: Array<SelectOption> = [
+    { label: 'Select answer', value: '' },
+    { label: 'Technology', value: 'technology' },
+    { label: 'Finance', value: 'finance' },
+    { label: 'Healthcare', value: 'healthcare' },
+    { label: 'Education', value: 'education' },
+    { label: 'Retail', value: 'retail' },
+    { label: 'Other', value: 'other' }
+  ];
+
+  const companySizeOptions: Array<SelectOption> = [
+    { label: 'Select answer', value: '' },
+    { label: '1-10 employees', value: '1-10' },
+    { label: '11-50 employees', value: '11-50' },
+    { label: '51-200 employees', value: '51-200' },
+    { label: '201-500 employees', value: '201-500' },
+    { label: '500+ employees', value: '500+' }
+  ];
+
+  const teammatesOptions: Array<SelectOption> = [
+    { label: 'Select answer', value: '' },
+    { label: '1-5 teammates', value: '1-5' },
+    { label: '6-15 teammates', value: '6-15' },
+    { label: '16-50 teammates', value: '16-50' },
+    { label: '51-100 teammates', value: '51-100' },
+    { label: '100+ teammates', value: '100+' }
+  ];
 
   return (
     <div className="bg-white content-stretch flex items-start relative rounded-[2px] size-full max-w-[850px] mx-auto">
@@ -91,70 +119,39 @@ export function CustomizationCard() {
             <label className="flex flex-col font-normal justify-center leading-[0] not-italic relative shrink-0 text-[#646464] text-[15px] tracking-[-0.026px] w-full">
               <p className="leading-[18px] whitespace-pre-wrap">What type of company do you work for?</p>
             </label>
-            <div className="bg-white box-border content-stretch flex h-[28px] items-center justify-between pl-[8px] pr-[16px] py-[4px] relative rounded-[2px] shrink-0 w-full border border-[#bbbbbb] border-solid shadow-[0px_1px_1px_0px_rgba(0,0,0,0.06)] focus-within:ring-2 focus-within:ring-[#202020] focus-within:border-transparent">
-              <select
-                value={formData.companyType}
-                onChange={(e) => handleInputChange('companyType', e.target.value)}
-                className="flex flex-col font-normal justify-center leading-[0] not-italic relative shrink-0 text-[#bbbbbb] text-[13px] whitespace-nowrap bg-transparent border-none outline-none w-full text-left"
-              >
-                <option value="">Select answer</option>
-                <option value="technology">Technology</option>
-                <option value="finance">Finance</option>
-                <option value="healthcare">Healthcare</option>
-                <option value="education">Education</option>
-                <option value="retail">Retail</option>
-                <option value="other">Other</option>
-              </select>
-              <div className="relative shrink-0 size-[16px]">
-                <ChevronDown className="w-4 h-4 text-[#bbbbbb]" />
-              </div>
-            </div>
+            <AppSelect
+              options={companyTypeOptions}
+              placeholder="Select answer"
+              value={formData.companyType}
+              onValueChange={(value) => handleInputChange('companyType', value)}
+              triggerClassName="w-full min-w-0"
+            />
           </div>
 
           <div className="content-stretch flex flex-col gap-[4px] h-[50px] items-start relative shrink-0 w-full">
             <label className="flex flex-col font-normal justify-center leading-[0] not-italic relative shrink-0 text-[#646464] text-[15px] tracking-[-0.026px] w-full">
               <p className="leading-[18px] whitespace-pre-wrap">What is your company size?</p>
             </label>
-            <div className="bg-white box-border content-stretch flex h-[28px] items-center justify-between pl-[8px] pr-[16px] py-[4px] relative rounded-[2px] shrink-0 w-full border border-[#bbbbbb] border-solid shadow-[0px_1px_1px_0px_rgba(0,0,0,0.06)] focus-within:ring-2 focus-within:ring-[#202020] focus-within:border-transparent">
-              <select
-                value={formData.companySize}
-                onChange={(e) => handleInputChange('companySize', e.target.value)}
-                className="flex flex-col font-normal justify-center leading-[0] not-italic relative shrink-0 text-[#bbbbbb] text-[13px] whitespace-nowrap bg-transparent border-none outline-none w-full text-left"
-              >
-                <option value="">Select answer</option>
-                <option value="1-10">1-10 employees</option>
-                <option value="11-50">11-50 employees</option>
-                <option value="51-200">51-200 employees</option>
-                <option value="201-500">201-500 employees</option>
-                <option value="500+">500+ employees</option>
-              </select>
-              <div className="relative shrink-0 size-[16px]">
-                <ChevronDown className="w-4 h-4 text-[#bbbbbb]" />
-              </div>
-            </div>
+            <AppSelect
+              options={companySizeOptions}
+              placeholder="Select answer"
+              value={formData.companySize}
+              onValueChange={(value) => handleInputChange('companySize', value)}
+              triggerClassName="w-full min-w-0"
+            />
           </div>
 
           <div className="content-stretch flex flex-col gap-[4px] h-[50px] items-start relative shrink-0 w-full">
             <label className="flex flex-col font-normal justify-center leading-[0] not-italic relative shrink-0 text-[#646464] text-[15px] tracking-[-0.026px] w-full">
               <p className="leading-[18px] whitespace-pre-wrap">How many teammates will be using Folk?</p>
             </label>
-            <div className="bg-white box-border content-stretch flex h-[28px] items-center justify-between pl-[8px] pr-[16px] py-[4px] relative rounded-[2px] shrink-0 w-full border border-[#bbbbbb] border-solid shadow-[0px_1px_1px_0px_rgba(0,0,0,0.06)] focus-within:ring-2 focus-within:ring-[#202020] focus-within:border-transparent">
-              <select
-                value={formData.teammates}
-                onChange={(e) => handleInputChange('teammates', e.target.value)}
-                className="flex flex-col font-normal justify-center leading-[0] not-italic relative shrink-0 text-[#bbbbbb] text-[13px] whitespace-nowrap bg-transparent border-none outline-none w-full text-left"
-              >
-                <option value="">Select answer</option>
-                <option value="1-5">1-5 teammates</option>
-                <option value="6-15">6-15 teammates</option>
-                <option value="16-50">16-50 teammates</option>
-                <option value="51-100">51-100 teammates</option>
-                <option value="100+">100+ teammates</option>
-              </select>
-              <div className="relative shrink-0 size-[16px]">
-                <ChevronDown className="w-4 h-4 text-[#bbbbbb]" />
-              </div>
-            </div>
+            <AppSelect
+              options={teammatesOptions}
+              placeholder="Select answer"
+              value={formData.teammates}
+              onValueChange={(value) => handleInputChange('teammates', value)}
+              triggerClassName="w-full min-w-0"
+            />
           </div>
         </div>
       </div>
