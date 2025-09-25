@@ -73,7 +73,7 @@ export function Select({
             "bg-white border border-[#bbbbbb] rounded-[2px] shadow-[0px_1px_1px_0px_rgba(0,0,0,0.06)]",
             "h-[28px] px-2 pr-4 py-1 w-full flex items-center justify-between",
             "text-[13px] leading-[19px] text-center",
-            "hover:border-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500",
+            "hover:border-gray-400 focus:outline-none",
             "transition-colors duration-150",
             disabled && "opacity-50 cursor-not-allowed",
             !selectedValue && "text-[#bbbbbb]",
@@ -104,7 +104,7 @@ export function Select({
                   "w-full px-2 py-1 text-left text-[13px] leading-[19px] text-gray-900",
                   "hover:bg-gray-50 transition-colors duration-150",
                   "first:rounded-t-[2px] last:rounded-b-[2px]",
-                  selectedValue === option.value && "bg-blue-50 text-blue-900"
+                  selectedValue === option.value && "bg-gray-50 text-gray-900"
                 )}
               >
                 {option.label}
