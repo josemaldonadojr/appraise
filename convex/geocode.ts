@@ -1,3 +1,5 @@
+"use node";
+
 import { v, ConvexError } from "convex/values";
 import { action, internalAction } from "./_generated/server";
 import { components, internal } from "./_generated/api";
