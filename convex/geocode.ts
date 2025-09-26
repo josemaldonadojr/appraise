@@ -70,7 +70,8 @@ function normalizeFeatureV6(mapboxFeature: MapboxFeature) {
     };
 }
 
-export const forwardGeocode = internalAction({
+// Pure geocoding function - only calls Mapbox API, no database mutations
+export const forwardGeocodePure = internalAction({
     args: {
         query: v.string(),
         limit: v.optional(v.number()),
@@ -112,20 +113,6 @@ export const forwardGeocode = internalAction({
             const geocodingData: MapboxGeocodingResponse = await mapboxResponse.json();
             const results = geocodingData.features.map(normalizeFeatureV6);
 
-            if (results.length > 0) {
-                const firstResult = results[0];
-                await ctx.runMutation(internal.properties.saveProperty, {
-                    line1: firstResult.line1,
-                    fullAddress: firstResult.fullAddress,
-                    city: firstResult.city,
-                    state: firstResult.state,
-                    postalCode: firstResult.postalCode,
-                    countryCode: firstResult.countryCode,
-                    longitude: firstResult.longitude,
-                    latitude: firstResult.latitude,
-                });
-            }
-
             return results;
         } catch (error) {
             if (error instanceof ConvexError) {
@@ -140,8 +127,8 @@ export const forwardGeocode = internalAction({
 });
 
 const geocodeCache = new ActionCache(components.actionCache, {
-    action: internal.geocode.forwardGeocode,
-    name: "forwardGeocodeV1",
+    action: internal.geocode.forwardGeocodePure,
+    name: "forwardGeocodePureV1",
     ttl: 1000 * 60 * 60 * 24 * 7,
 }) as ActionCache<any>;
 
@@ -171,6 +158,33 @@ export const forwardGeocodeCached = action({
         longitude: number | null;
         latitude: number | null;
     }>> => {
-        return await geocodeCache.fetch(ctx, args);
+        // Get geocoding results (cached or fresh)
+        const results: Array<{
+            line1: string | null;
+            fullAddress: string;
+            city: string | null;
+            state: string | null;
+            postalCode: string | null;
+            countryCode: string | null;
+            longitude: number | null;
+            latitude: number | null;
+        }> = await geocodeCache.fetch(ctx, args);
+
+        // Always save the property (this never gets cached)
+        if (results.length > 0) {
+            const firstResult = results[0];
+            await ctx.runMutation(internal.properties.saveProperty, {
+                line1: firstResult.line1,
+                fullAddress: firstResult.fullAddress,
+                city: firstResult.city,
+                state: firstResult.state,
+                postalCode: firstResult.postalCode,
+                countryCode: firstResult.countryCode,
+                longitude: firstResult.longitude,
+                latitude: firstResult.latitude,
+            });
+        }
+
+        return results;
     },
 });
