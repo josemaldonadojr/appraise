@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { ConvexError } from "convex/values";
+import { internal } from "./_generated/api";
 
 type MapboxCoordinates = {
     longitude?: number;
@@ -109,7 +110,23 @@ export const forwardGeocode = action({
             }
 
             const geocodingData: MapboxGeocodingResponse = await mapboxResponse.json();
-            return geocodingData.features.map(normalizeFeatureV6);
+            const results = geocodingData.features.map(normalizeFeatureV6);
+
+            if (results.length > 0) {
+                const firstResult = results[0];
+                await ctx.runMutation(internal.properties.saveProperty, {
+                    line1: firstResult.line1,
+                    fullAddress: firstResult.fullAddress,
+                    city: firstResult.city,
+                    state: firstResult.state,
+                    postalCode: firstResult.postalCode,
+                    countryCode: firstResult.countryCode,
+                    longitude: firstResult.longitude,
+                    latitude: firstResult.latitude,
+                });
+            }
+
+            return results;
         } catch (error) {
             if (error instanceof ConvexError) {
                 throw error;

@@ -11,7 +11,7 @@
 import type * as auth from "../auth.js";
 import type * as geocode from "../geocode.js";
 import type * as http from "../http.js";
-import type * as myFunctions from "../myFunctions.js";
+import type * as properties from "../properties.js";
 
 import type {
   ApiFromModules,
@@ -31,7 +31,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   geocode: typeof geocode;
   http: typeof http;
-  myFunctions: typeof myFunctions;
+  properties: typeof properties;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 
