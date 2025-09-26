@@ -39,6 +39,9 @@ export const initiateAppraisalRequest = action({
             appraisalRequestId = await ctx.runMutation(internal.appraisal.createAppraisalRequest, {
                 propertyId,
             });
+            await ctx.scheduler.runAfter(0, internal.properties.getNearestProperties, {
+                propertyId,
+            });
         }
 
         return appraisalRequestId;
