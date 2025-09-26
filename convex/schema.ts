@@ -21,4 +21,10 @@ export default defineSchema({
     comparablePropertyId: v.id("properties"),
   })
     .index("bySubjectPropertyId", ["subjectPropertyId"]),
+
+
+  appraisal_requests: defineTable({
+    propertyId: v.id("properties"),
+  })
+    .index("byPropertyId", ["propertyId"]),
 });
