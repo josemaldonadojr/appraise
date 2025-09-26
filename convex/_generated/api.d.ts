@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as appraisal from "../appraisal.js";
 import type * as auth from "../auth.js";
 import type * as geocode from "../geocode.js";
 import type * as http from "../http.js";
@@ -28,6 +29,7 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  appraisal: typeof appraisal;
   auth: typeof auth;
   geocode: typeof geocode;
   http: typeof http;

@@ -1,3 +1,5 @@
+"use node";
+
 import { v, ConvexError } from "convex/values";
 import { action, internalAction } from "./_generated/server";
 import { components, internal } from "./_generated/api";
@@ -170,20 +172,8 @@ export const forwardGeocodeCached = action({
             latitude: number | null;
         }> = await geocodeCache.fetch(ctx, args);
 
-        // Always save the property (this never gets cached)
-        if (results.length > 0) {
-            const firstResult = results[0];
-            await ctx.runMutation(internal.properties.saveProperty, {
-                line1: firstResult.line1,
-                fullAddress: firstResult.fullAddress,
-                city: firstResult.city,
-                state: firstResult.state,
-                postalCode: firstResult.postalCode,
-                countryCode: firstResult.countryCode,
-                longitude: firstResult.longitude,
-                latitude: firstResult.latitude,
-            });
-        }
+        // Note: Property creation is now handled by the workflow system
+        // This geocode function just returns the geocoding results
 
         return results;
     },
