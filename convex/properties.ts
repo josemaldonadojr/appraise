@@ -14,6 +14,16 @@ export const saveProperty = internalMutation({
     },
     returns: v.id("properties"),
     handler: async (ctx, args) => {
+        const existing = await ctx.db
+            .query("properties")
+            .withIndex("byFullAddress", (q) => q.eq("fullAddress", args.fullAddress))
+            .unique();
+
+        if (existing) {
+            return existing._id;
+        }
+
+
         return await ctx.db.insert("properties", {
             line1: args.line1,
             fullAddress: args.fullAddress,
