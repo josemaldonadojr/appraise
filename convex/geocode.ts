@@ -1,7 +1,9 @@
 import { v } from "convex/values";
-import { action } from "./_generated/server";
+import { action, internalAction } from "./_generated/server";
 import { ConvexError } from "convex/values";
 import { internal } from "./_generated/api";
+import { ActionCache } from "@convex-dev/action-cache";
+import { components } from "./_generated/api";
 
 type MapboxCoordinates = {
     longitude?: number;
@@ -70,7 +72,7 @@ function normalizeFeatureV6(mapboxFeature: MapboxFeature) {
     };
 }
 
-export const forwardGeocode = action({
+export const forwardGeocode = internalAction({
     args: {
         query: v.string(),
         limit: v.optional(v.number()),
@@ -136,5 +138,41 @@ export const forwardGeocode = action({
                 message: `Geocoding request failed: ${error instanceof Error ? error.message : 'Unknown error'}`
             });
         }
+    },
+});
+
+const geocodeCache = new ActionCache(components.actionCache, {
+    action: internal.geocode.forwardGeocode,
+    name: "forwardGeocodeV1",
+    ttl: 1000 * 60 * 60 * 24 * 7,
+}) as ActionCache<any>;
+
+export const forwardGeocodeCached = action({
+    args: {
+        query: v.string(),
+        limit: v.optional(v.number()),
+        country: v.optional(v.string()),
+    },
+    returns: v.array(v.object({
+        line1: v.union(v.string(), v.null()),
+        fullAddress: v.string(),
+        city: v.union(v.string(), v.null()),
+        state: v.union(v.string(), v.null()),
+        postalCode: v.union(v.string(), v.null()),
+        countryCode: v.union(v.string(), v.null()),
+        longitude: v.union(v.number(), v.null()),
+        latitude: v.union(v.number(), v.null()),
+    })),
+    handler: async (ctx, args): Promise<Array<{
+        line1: string | null;
+        fullAddress: string;
+        city: string | null;
+        state: string | null;
+        postalCode: string | null;
+        countryCode: string | null;
+        longitude: number | null;
+        latitude: number | null;
+    }>> => {
+        return await geocodeCache.fetch(ctx, args);
     },
 });
