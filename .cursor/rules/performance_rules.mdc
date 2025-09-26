@@ -1,0 +1,26 @@
+---
+description: Performance and architecture guidelines to prevent latency issues and inefficient patterns
+globs: **/*.ts,**/*.tsx
+alwaysApply: false
+---
+# Performance Rules
+
+## ❌ Avoid Action Chains
+- Don't create multiple layers of actions calling each other
+- Use helper functions instead of `ctx.runAction` for same-runtime logic
+
+## ❌ Don't Cache Side Effects
+- Never cache functions that mutate data or have side effects
+- Cache only pure functions (API calls, calculations)
+- Always run business logic separately from cached functions
+
+## ✅ Keep It Simple
+- Prefer single actions with helper functions
+- Separate pure functions from side effects
+- Minimize function call layers
+
+## Red Flags
+- More than 2 actions in a chain
+- Cached functions that mutate data
+- Unnecessary "orchestrator" layers
+- Actions that just call other actions
