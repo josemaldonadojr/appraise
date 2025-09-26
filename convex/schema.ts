@@ -15,4 +15,10 @@ export default defineSchema({
     .index("byFullAddress", ["fullAddress"])
     .index("byCity", ["city"])
     .index("byCoordinates", ["longitude", "latitude"]),
+
+  comparables: defineTable({
+    subjectPropertyId: v.id("properties"),
+    comparablePropertyId: v.id("properties"),
+  })
+    .index("bySubjectPropertyId", ["subjectPropertyId"]),
 });
