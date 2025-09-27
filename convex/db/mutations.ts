@@ -312,3 +312,28 @@ export const enrichPropertyWithData = internalMutation({
         return null;
     },
 });
+
+export const saveSalesHistory = internalMutation({
+    args: {
+        propertyId: v.id("properties"),
+        salesHistory: v.array(v.object({
+            previousOwner: v.union(v.string(), v.null()),
+            saleDate: v.union(v.string(), v.null()),
+            salePriceUsd: v.union(v.number(), v.null()),
+            adjustedSalePriceUsd: v.union(v.number(), v.null()),
+            unitPriceSqftUsd: v.union(v.number(), v.null()),
+        })),
+    },
+    handler: async (ctx, args) => {
+        for (const sale of args.salesHistory) {
+            await ctx.db.insert("sales_history", {
+                propertyId: args.propertyId,
+                previousOwner: sale.previousOwner,
+                saleDate: sale.saleDate,
+                salePriceUsd: sale.salePriceUsd,
+                adjustedSalePriceUsd: sale.adjustedSalePriceUsd,
+                unitPriceSqftUsd: sale.unitPriceSqftUsd,
+            });
+        }
+    },
+});

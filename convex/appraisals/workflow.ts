@@ -95,7 +95,12 @@ export const appraisalWorkflow = workflow.define({
 
                             await step.runMutation(internal.db.mutations.enrichPropertyWithData, {
                                 propertyId: account.comparableId,
-                                enrichedData,
+                                enrichedData: enrichedData.propertyData,
+                            });
+
+                            await step.runMutation(internal.db.mutations.saveSalesHistory, {
+                                propertyId: account.comparableId,
+                                salesHistory: enrichedData.salesHistory,
                             });
                         } catch (error) {
                             console.error(`Failed to enrich property data for account ${account.accountNumber}:`, error);
