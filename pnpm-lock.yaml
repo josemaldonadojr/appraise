@@ -17,6 +17,9 @@ importers:
       '@convex-dev/react-query':
         specifier: ^0.0.0-alpha.11
         version: 0.0.0-alpha.11(@tanstack/react-query@5.90.1(react@19.1.1))(convex@1.27.2(react@19.1.1))(react@19.1.1)(typescript@5.9.2)(zod@3.25.76)
+      '@convex-dev/workflow':
+        specifier: ^0.2.6
+        version: 0.2.6(@convex-dev/workpool@0.2.18(convex-helpers@0.1.104(convex@1.27.2(react@19.1.1))(react@19.1.1)(typescript@5.9.2)(zod@3.25.76))(convex@1.27.2(react@19.1.1)))(convex-helpers@0.1.104(convex@1.27.2(react@19.1.1))(react@19.1.1)(typescript@5.9.2)(zod@3.25.76))(convex@1.27.2(react@19.1.1))
       '@radix-ui/react-slot':
         specifier: ^1.2.3
         version: 1.2.3(@types/react@19.1.13)(react@19.1.1)
@@ -294,6 +297,19 @@ packages:
     peerDependencies:
       '@tanstack/react-query': ^5.0.0
       convex: ^1.24.8
+
+  '@convex-dev/workflow@0.2.6':
+    resolution: {integrity: sha512-jXaRqBHiRKHCbm8kll0+PxlRtHFkmXCVVbKBhuVYLP4/O5Tlxb2teXDKx+pv3hsmcps0uySm5QKSmsp51N1hTw==}
+    peerDependencies:
+      '@convex-dev/workpool': ^0.2.17
+      convex: '>=1.25.0 <1.35.0'
+      convex-helpers: ^0.1.99
+
+  '@convex-dev/workpool@0.2.18':
+    resolution: {integrity: sha512-tfRfBCukaRiybxwy4/W3rLWpIRhPivFH9tC5++d0XE1sV627vw2mAwOM9SnpY1k+BWVoNrHrHrxBheklSbuAag==}
+    peerDependencies:
+      convex: '>=1.25.0 <1.35.0'
+      convex-helpers: ^0.1.94
 
   '@emnapi/core@0.45.0':
     resolution: {integrity: sha512-DPWjcUDQkCeEM4VnljEOEcXdAD7pp8zSZsgOujk/LGIwCXWbXJngin+MO4zbH429lzeC3WbYLGjE2MaUOwzpyw==}
@@ -1575,6 +1591,9 @@ packages:
   ast-types@0.16.1:
     resolution: {integrity: sha512-6t10qk83GOG8p0vKmaCr8eiilZwO171AvbROMtvvNiwrTly62t+7XkA8RdIIVbpMhCASAsxgAzdRSwh6nw/5Dg==}
     engines: {node: '>=4'}
+
+  async-channel@0.2.0:
+    resolution: {integrity: sha512-BJyjI/sfKlyijaBt2hbOSxT28xGNtLR0QLzAKO1Hlnv5BULY7sAoYoTPW3lfr1ZIC7y+FxabxO9T8GXpyoofGg==}
 
   async-sema@3.1.1:
     resolution: {integrity: sha512-tLRNUXati5MFePdAk8dw7Qt7DpxPB60ofAgn8WRhW6a2rcimZnYBP9oxHiv0OHy+Wz7kPMG+t4LGdt31+4EmGg==}
@@ -3552,6 +3571,18 @@ snapshots:
       - typescript
       - zod
 
+  '@convex-dev/workflow@0.2.6(@convex-dev/workpool@0.2.18(convex-helpers@0.1.104(convex@1.27.2(react@19.1.1))(react@19.1.1)(typescript@5.9.2)(zod@3.25.76))(convex@1.27.2(react@19.1.1)))(convex-helpers@0.1.104(convex@1.27.2(react@19.1.1))(react@19.1.1)(typescript@5.9.2)(zod@3.25.76))(convex@1.27.2(react@19.1.1))':
+    dependencies:
+      '@convex-dev/workpool': 0.2.18(convex-helpers@0.1.104(convex@1.27.2(react@19.1.1))(react@19.1.1)(typescript@5.9.2)(zod@3.25.76))(convex@1.27.2(react@19.1.1))
+      async-channel: 0.2.0
+      convex: 1.27.2(react@19.1.1)
+      convex-helpers: 0.1.104(convex@1.27.2(react@19.1.1))(react@19.1.1)(typescript@5.9.2)(zod@3.25.76)
+
+  '@convex-dev/workpool@0.2.18(convex-helpers@0.1.104(convex@1.27.2(react@19.1.1))(react@19.1.1)(typescript@5.9.2)(zod@3.25.76))(convex@1.27.2(react@19.1.1))':
+    dependencies:
+      convex: 1.27.2(react@19.1.1)
+      convex-helpers: 0.1.104(convex@1.27.2(react@19.1.1))(react@19.1.1)(typescript@5.9.2)(zod@3.25.76)
+
   '@emnapi/core@0.45.0':
     dependencies:
       tslib: 2.8.1
@@ -4833,6 +4864,8 @@ snapshots:
   ast-types@0.16.1:
     dependencies:
       tslib: 2.8.1
+
+  async-channel@0.2.0: {}
 
   async-sema@3.1.1: {}
 

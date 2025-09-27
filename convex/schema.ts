@@ -11,20 +11,28 @@ export default defineSchema({
     countryCode: v.union(v.string(), v.null()),
     longitude: v.union(v.number(), v.null()),
     latitude: v.union(v.number(), v.null()),
+    accountNumber: v.optional(v.union(v.string(), v.null())),
   })
     .index("byFullAddress", ["fullAddress"])
     .index("byCity", ["city"])
-    .index("byCoordinates", ["longitude", "latitude"]),
+    .index("byCoordinates", ["longitude", "latitude"])
+    .index("byAccountNumber", ["accountNumber"]),
 
   comparables: defineTable({
-    subjectPropertyId: v.id("properties"),
     comparablePropertyId: v.id("properties"),
+    appraisalRequestId: v.id("appraisal_requests"),
   })
-    .index("bySubjectProperty", ["subjectPropertyId"]),
+    .index("byComparableProperty", ["comparablePropertyId"])
+    .index("byAppraisalRequest", ["appraisalRequestId"]),
 
 
   appraisal_requests: defineTable({
-    propertyId: v.id("properties"),
-  })
-    .index("byPropertyId", ["propertyId"]),
+    address: v.string(),
+    status: v.string(),
+    workflowId: v.optional(v.string()),
+    // userId: v.id("users"),
+
+    finalResult: v.optional(v.number()),
+    errorDetails: v.optional(v.object({ message: v.string() })),
+  }).index("byStatus", ["status"]),
 });
