@@ -85,6 +85,25 @@ export const appraisalWorkflow = workflow.define({
                     requestId: appraisalRequestId,
                     accountsToSave: finalResult,
                 });
+
+                // Enrich properties with detailed data
+                for (const account of finalResult) {
+                    if (account.accountNumber) {
+                        try {
+                            const enrichedData = await step.runAction(internal.external.actions.enrichPropertyData, {
+                                accountNumber: account.accountNumber,
+                            });
+
+                            await step.runMutation(internal.db.mutations.enrichPropertyWithData, {
+                                propertyId: account.comparableId,
+                                enrichedData,
+                            });
+                        } catch (error) {
+                            console.error(`Failed to enrich property data for account ${account.accountNumber}:`, error);
+                            // Continue with other properties even if one fails
+                        }
+                    }
+                }
             }
         } catch (error) {
             console.error("Appraisal workflow failed:", error);
