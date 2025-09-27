@@ -179,7 +179,6 @@ export function composePrompt(subject: Subject, comps: Comp[], cfg: RatesConfig)
 export const appraise = internalAction({
     args: {
         subject: v.object({
-            appraisalRequestId: v.union(v.id("appraisal_requests"), v.null()),
             line1: v.union(v.string(), v.null()),
             fullAddress: v.string(),
             city: v.union(v.string(), v.null()),
@@ -221,7 +220,6 @@ export const appraise = internalAction({
             finishedBasementAreaSqft: v.union(v.number(), v.null()),
         }),
         comps: v.array(v.object({
-            appraisalRequestId: v.union(v.id("appraisal_requests"), v.null()),
             line1: v.union(v.string(), v.null()),
             fullAddress: v.string(),
             city: v.union(v.string(), v.null()),
@@ -273,7 +271,7 @@ export const appraise = internalAction({
             timeAdjMonthlyStart: v.number(),
         }),
     },
-    returns: v.object({}),
+    returns: v.null(),
     handler: async (ctx, args) => {
         const prompt = composePrompt(args.subject, args.comps, args.cfg);
         console.log(prompt, 'prompt')

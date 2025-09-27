@@ -111,7 +111,6 @@ export const appraisalWorkflow = workflow.define({
             // Extract only the relevant fields, excluding system fields like _id and _creationTime
             const subject = subjectProperty[0];
             const subjectData = {
-                appraisalRequestId: subject.appraisalRequestId,
                 line1: subject.line1,
                 fullAddress: subject.fullAddress,
                 city: subject.city,
@@ -152,9 +151,56 @@ export const appraisalWorkflow = workflow.define({
                 finishedBasementAreaSqft: subject.finishedBasementAreaSqft,
             };
 
+            const compsReadyForAppraisal = [];
+            for (const comparable of geocodedComparables) {
+                if (comparable.accountNumber) {
+                    const comparableData = {
+                        line1: comparable.line1,
+                        fullAddress: comparable.fullAddress,
+                        city: comparable.city,
+                        state: comparable.state,
+                        postalCode: comparable.postalCode,
+                        countryCode: comparable.countryCode,
+                        longitude: comparable.longitude,
+                        latitude: comparable.latitude,
+                        accountNumber: comparable.accountNumber,
+                        bedrooms: comparable.bedrooms,
+                        lotSize: comparable.lotSize,
+                        bathrooms: comparable.bathrooms,
+                        halfBathrooms: comparable.halfBathrooms,
+                        parcelId: comparable.parcelId,
+                        asOfDate: comparable.asOfDate,
+                        fireplaces: comparable.fireplaces,
+                        ownerName: comparable.ownerName,
+                        yearBuilt: comparable.yearBuilt,
+                        subdivision: comparable.subdivision,
+                        totalRooms: comparable.totalRooms,
+                        qualityCode: comparable.qualityCode,
+                        fireDistrict: comparable.fireDistrict,
+                        propertyType: comparable.propertyType,
+                        baseAreaSqft: comparable.baseAreaSqft,
+                        exteriorWalls: comparable.exteriorWalls,
+                        landValueUsd: comparable.landValueUsd,
+                        schoolDistrict: comparable.schoolDistrict,
+                        totalAreaSqft: comparable.totalAreaSqft,
+                        legalDescription: comparable.legalDescription,
+                        neighborhoodCode: comparable.neighborhoodCode,
+                        parkingAreaSqft: comparable.parkingAreaSqft,
+                        architecturalType: comparable.architecturalType,
+                        basementAreaSqft: comparable.basementAreaSqft,
+                        commercialValueUsd: comparable.commercialValueUsd,
+                        agricultureValueUsd: comparable.agricultureValueUsd,
+                        residentialValueUsd: comparable.residentialValueUsd,
+                        totalMarketValueUsd: comparable.totalMarketValueUsd,
+                        finishedBasementAreaSqft: comparable.finishedBasementAreaSqft,
+                    };
+                    compsReadyForAppraisal.push(comparableData);
+                }
+            }
+
             const appraisalResult = await step.runAction(internal.external.appraise.appraise, {
                 subject: subjectData,
-                comps: [],
+                comps: compsReadyForAppraisal,
                 cfg: {
                     glaRateStart: 90,
                     bedroomStart: 4000,
