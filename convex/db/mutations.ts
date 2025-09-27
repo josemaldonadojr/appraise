@@ -40,18 +40,19 @@ export const updateGeocodeResult = internalMutation({
     returns: v.id("properties"),
     handler: async (ctx, args) => {
         await ctx.db.patch(args.requestId, { status: AppraisalStatus.GEOCODED });
-        
+
         // Check if a property with this full address already exists
         const existingProperty = await ctx.db.query("properties")
             .withIndex("byFullAddress", q => q.eq("fullAddress", args.fullAddress))
             .first();
-            
+
         if (existingProperty) {
             // Property already exists, return its ID
             return existingProperty._id;
         } else {
             // Create new property
             return await ctx.db.insert("properties", {
+                appraisalRequestId: args.requestId,
                 line1: args.line1,
                 fullAddress: args.fullAddress,
                 city: args.city,
@@ -129,13 +130,14 @@ export const saveComparableBatch = internalMutation({
 
             let comparablePropertyId;
             let hasAccountNumber = false;
-            
+
             if (existingProperty) {
                 comparablePropertyId = existingProperty._id;
                 // Check if the existing property already has an account number
                 hasAccountNumber = existingProperty.accountNumber !== null && existingProperty.accountNumber !== undefined;
             } else {
                 comparablePropertyId = await ctx.db.insert("properties", {
+                    appraisalRequestId: args.requestId,
                     line1: comparableProperty.line1,
                     fullAddress: comparableProperty.fullAddress,
                     city: comparableProperty.city,

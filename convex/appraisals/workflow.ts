@@ -86,7 +86,6 @@ export const appraisalWorkflow = workflow.define({
                     accountsToSave: finalResult,
                 });
 
-                // Enrich properties with detailed data
                 for (const account of finalResult) {
                     if (account.accountNumber) {
                         try {
@@ -100,11 +99,73 @@ export const appraisalWorkflow = workflow.define({
                             });
                         } catch (error) {
                             console.error(`Failed to enrich property data for account ${account.accountNumber}:`, error);
-                            // Continue with other properties even if one fails
                         }
                     }
                 }
             }
+
+            const subjectProperty = await step.runQuery(internal.db.query.getSubjectPropertyByRequestId, {
+                appraisalRequestId: appraisalRequestId,
+            });
+
+            // Extract only the relevant fields, excluding system fields like _id and _creationTime
+            const subject = subjectProperty[0];
+            const subjectData = {
+                appraisalRequestId: subject.appraisalRequestId,
+                line1: subject.line1,
+                fullAddress: subject.fullAddress,
+                city: subject.city,
+                state: subject.state,
+                postalCode: subject.postalCode,
+                countryCode: subject.countryCode,
+                longitude: subject.longitude,
+                latitude: subject.latitude,
+                accountNumber: subject.accountNumber,
+                bedrooms: subject.bedrooms,
+                lotSize: subject.lotSize,
+                bathrooms: subject.bathrooms,
+                halfBathrooms: subject.halfBathrooms,
+                parcelId: subject.parcelId,
+                asOfDate: subject.asOfDate,
+                fireplaces: subject.fireplaces,
+                ownerName: subject.ownerName,
+                yearBuilt: subject.yearBuilt,
+                subdivision: subject.subdivision,
+                totalRooms: subject.totalRooms,
+                qualityCode: subject.qualityCode,
+                fireDistrict: subject.fireDistrict,
+                propertyType: subject.propertyType,
+                baseAreaSqft: subject.baseAreaSqft,
+                exteriorWalls: subject.exteriorWalls,
+                landValueUsd: subject.landValueUsd,
+                schoolDistrict: subject.schoolDistrict,
+                totalAreaSqft: subject.totalAreaSqft,
+                legalDescription: subject.legalDescription,
+                neighborhoodCode: subject.neighborhoodCode,
+                parkingAreaSqft: subject.parkingAreaSqft,
+                architecturalType: subject.architecturalType,
+                basementAreaSqft: subject.basementAreaSqft,
+                commercialValueUsd: subject.commercialValueUsd,
+                agricultureValueUsd: subject.agricultureValueUsd,
+                residentialValueUsd: subject.residentialValueUsd,
+                totalMarketValueUsd: subject.totalMarketValueUsd,
+                finishedBasementAreaSqft: subject.finishedBasementAreaSqft,
+            };
+
+            const appraisalResult = await step.runAction(internal.external.appraise.appraise, {
+                subject: subjectData,
+                comps: [],
+                cfg: {
+                    glaRateStart: 90,
+                    bedroomStart: 4000,
+                    bathFullStart: 5000,
+                    bathHalfStart: 2500,
+                    basementFinishedStart: 35,
+                    garageRateStart: 20,
+                    lotMethod: "lump_sum",
+                    timeAdjMonthlyStart: 0.004,
+                },
+            });
         } catch (error) {
             console.error("Appraisal workflow failed:", error);
 

@@ -3,6 +3,7 @@ import { v } from "convex/values";
 
 export default defineSchema({
   properties: defineTable({
+    appraisalRequestId: v.union(v.id("appraisal_requests"), v.null()),
     line1: v.union(v.string(), v.null()),
     fullAddress: v.string(),
     city: v.union(v.string(), v.null()),
@@ -46,7 +47,8 @@ export default defineSchema({
     .index("byFullAddress", ["fullAddress"])
     .index("byCity", ["city"])
     .index("byCoordinates", ["longitude", "latitude"])
-    .index("byAccountNumber", ["accountNumber"]),
+    .index("byAccountNumber", ["accountNumber"])
+    .index("byAppraisalRequest", ["appraisalRequestId"]),
 
   comparables: defineTable({
     comparablePropertyId: v.id("properties"),

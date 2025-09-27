@@ -253,7 +253,7 @@ function normalizeAddress(address: string): string {
         'Court': 'Ct',
         'Drive': 'Dr',
         'Lane': 'Ln',
-        // 'Place': 'Pl',
+        'Place': 'Pl',
         'Road': 'Rd',
         'Street': 'St',
         'Trail': 'Trl',
@@ -686,3 +686,4 @@ export const enrichPropertyData = internalAction({
         }
     },
 });
+
