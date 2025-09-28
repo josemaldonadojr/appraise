@@ -281,6 +281,11 @@ export const appraisalWorkflow = workflow.define({
                     timeAdjMonthlyStart: 0.004,
                 },
             });
+
+            await step.runMutation(internal.external.appraise.saveAppraisalJson, {
+                appraisalRequestId: appraisalRequestId,
+                appraisalJson: appraisalResult,
+            });
         } catch (error) {
             console.error("Appraisal workflow failed:", error);
 

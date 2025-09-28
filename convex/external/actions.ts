@@ -125,7 +125,7 @@ function buildPlaceSearchUrl(longitude: number, latitude: number) {
     const url = new URL(`https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json`);
     url.searchParams.set("access_token", process.env.MAPBOX_TOKEN!);
     url.searchParams.set("types", "address");
-    url.searchParams.set("limit", "10");
+    url.searchParams.set("limit", "2");
     return url.toString();
 }
 

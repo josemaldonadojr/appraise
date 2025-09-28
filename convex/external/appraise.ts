@@ -1,5 +1,8 @@
-import { internalAction } from "../_generated/server";
+import { internalAction, internalMutation } from "../_generated/server";
 import { v } from "convex/values";
+import { generateObject } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { z } from "zod";
 
 type Subject = Record<string, any>;
 type Comp = Record<string, any>;
@@ -134,7 +137,7 @@ function sanitizeForPipe(value: unknown): string {
 function buildPipeRow(obj: any, recordType: "subject" | "comp"): string {
     // Handle sales history - get the most recent sale or empty values
     const salesHistory = obj?.salesHistory?.[0] || {};
-    
+
     const values = [
         recordType,
         sanitizeForPipe(obj?.accountNumber),
@@ -294,13 +297,93 @@ export const appraise = internalAction({
             timeAdjMonthlyStart: v.number(),
         }),
     },
-    returns: v.null(),
+    returns: v.any(),
     handler: async (ctx, args) => {
         const prompt = composePrompt(args.subject, args.comps, args.cfg);
-        console.log(prompt, 'prompt');
 
-        // Build pipe-delimited representation of subject and comps
-        const pipeDelimited = buildPipeDelimited(args.subject, args.comps);
-        console.log(pipeDelimited, 'pipeDelimited');
+        const { object } = await generateObject({
+            model: openai('gpt-5'),
+            schema: z.object({
+                subject: z.object({
+                    address: z.string(),
+                    as_of_date: z.string(),
+                    summary: z.string()
+                }),
+                assumptions: z.object({
+                    gla_rate_per_sqft: z.number(),
+                    bath_full_rate: z.number(),
+                    bath_half_rate: z.number(),
+                    bedroom_rate: z.number(),
+                    basement_finished_rate: z.number(),
+                    garage_rate_per_sqft: z.number(),
+                    lot_adjustment_method: z.enum(["lump_sum", "per_sqft", "none"]),
+                    time_adjustment_monthly_rate: z.union([z.number(), z.null()]),
+                    location_adjustments_note: z.string()
+                }),
+                comps: z.array(z.object({
+                    id: z.union([z.string(), z.null()]),
+                    sale_date: z.string(),
+                    unadjusted_price: z.number(),
+                    price_per_sqft: z.union([z.number(), z.null()]),
+                    differences: z.object({
+                        gla_sqft: z.union([z.number(), z.null()]),
+                        beds_diff: z.union([z.number(), z.null()]),
+                        baths_full_diff: z.union([z.number(), z.null()]),
+                        baths_half_diff: z.union([z.number(), z.null()]),
+                        basement_finished_sqft_diff: z.union([z.number(), z.null()]),
+                        garage_sqft_diff: z.union([z.number(), z.null()]),
+                        lot_diff_descriptor: z.union([z.string(), z.null()]),
+                        quality_diff_descriptor: z.union([z.string(), z.null()]),
+                        location_diff_descriptor: z.union([z.string(), z.null()]),
+                        age_diff_years: z.union([z.number(), z.null()])
+                    }),
+                    adjustments: z.array(z.object({
+                        feature: z.string(),
+                        amount: z.number(),
+                        rationale: z.string()
+                    })),
+                    time_adjustment: z.number(),
+                    net_adjustment: z.number(),
+                    adjusted_price: z.number(),
+                    weight: z.number()
+                })),
+                reconciliation: z.object({
+                    indicated_range: z.object({
+                        low: z.number(),
+                        high: z.number()
+                    }),
+                    central_tendency: z.object({
+                        mean: z.number(),
+                        median: z.number()
+                    }),
+                    weighted_value: z.number(),
+                    final_value_opinion: z.number(),
+                    reasoning: z.string()
+                }),
+                risks: z.array(z.string())
+            }),
+            messages: [
+                {
+                    role: 'system',
+                    content: prompt,
+                },
+            ]
+        });
+
+        return object;
+
+    },
+});
+
+export const saveAppraisalJson = internalMutation({
+    args: {
+        appraisalRequestId: v.id("appraisal_requests"),
+        appraisalJson: v.any(),
+    },
+    handler: async (ctx, args) => {
+        await ctx.db.insert("appraisal_json", {
+            appraisalRequestId: args.appraisalRequestId,
+            appraisalJson: args.appraisalJson,
+        });
     },
 });

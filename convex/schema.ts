@@ -76,4 +76,8 @@ export default defineSchema({
     adjustedSalePriceUsd: v.union(v.number(), v.null()),
     unitPriceSqftUsd: v.union(v.number(), v.null()),
   }).index("byProperty", ["propertyId"]),
+  appraisal_json: defineTable({
+    appraisalRequestId: v.id("appraisal_requests"),
+    appraisalJson: v.optional(v.any()),
+  }).index("byAppraisalRequest", ["appraisalRequestId"]),
 });
