@@ -17,18 +17,62 @@ import {
   Share2,
   Mail,
 } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
+import { useMutation } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import { useQuery } from "convex/react"
+import type { Id } from "@/convex/_generated/dataModel"
 
 export default function HomePage() {
   const [isSearchFocused, setIsSearchFocused] = useState(false)
   const [searchValue, setSearchValue] = useState("")
+  const [originalAddress, setOriginalAddress] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [showSharePanel, setShowSharePanel] = useState(false)
   const [shareEmail, setShareEmail] = useState("")
   const [loadingStateIndex, setLoadingStateIndex] = useState(0)
   const router = useRouter()
+  const startRequest = useMutation(api.appraisals.api.startRequest)
+  const [currentRequestId, setCurrentRequestId] = useState<Id<"appraisal_requests"> | null>(null)
+  const statusResult = useQuery(
+    api.appraisals.api.getRequestStatus,
+    currentRequestId ? { appraisalRequestId: currentRequestId } : "skip"
+  )
+  const appraisalJson = useQuery(
+    api.appraisals.api.getAppraisalJson,
+    currentRequestId ? { appraisalRequestId: currentRequestId } : "skip"
+  )
+
+  const statusCopy: Record<string, string> = useMemo(() => ({
+    REQUEST_INITIATED: "Starting your appraisal request...",
+    GEOCODING_IN_PROGRESS: "Confirming the exact property location...",
+    GEOCODED: "Location verified. Preparing nearby sales...",
+    SEARCHING_COMPARABLES: "Finding comparable sales near your property...",
+    COMPARABLES_SAVED: "Comparables found. Verifying county account numbers...",
+    ACCOUNT_LOOKUP_IN_PROGRESS: "Looking up county account numbers...",
+    ACCOUNT_NUMBER_SAVED: "Accounts verified. Pulling detailed property data...",
+    PROPERTY_SCRAPE_IN_PROGRESS: "Collecting detailed property records...",
+    DATA_ENRICHED: "Analyzing market trends and adjustments...",
+    LLM_APPRAISAL_IN_PROGRESS: "Generating your appraisal report...",
+    APPRAISAL_COMPLETE: "Appraisal complete!",
+    FAILED: "We hit a snag preparing your report.",
+  }), [])
+
+  useEffect(() => {
+    if (!currentRequestId) return
+    if (statusResult?.status === "APPRAISAL_COMPLETE" && appraisalJson) {
+      router.push(`/results?requestId=${currentRequestId}&address=${encodeURIComponent(originalAddress)}`)
+    }
+  }, [currentRequestId, statusResult?.status, appraisalJson, router, originalAddress])
+
+  // Update search input text when status changes
+  useEffect(() => {
+    if (isLoading && currentRequestId) {
+      setSearchValue(getCurrentStatusText())
+    }
+  }, [statusResult?.status, isLoading, currentRequestId])
 
   const loadingStates = [
     "Locating your property...",
@@ -37,6 +81,14 @@ export default function HomePage() {
     "Generating your appraisal...",
   ]
 
+  // Use friendly status copy when we have real status, fall back to loading states
+  const getCurrentStatusText = () => {
+    if (statusResult?.status && statusCopy[statusResult.status]) {
+      return statusCopy[statusResult.status]
+    }
+    return loadingStates[loadingStateIndex]
+  }
+
   const handleSearch = async () => {
     if (!searchValue.trim()) return
     setShowLoginModal(true)
@@ -44,26 +96,41 @@ export default function HomePage() {
 
   const handleLoginAndProceed = async () => {
     setShowLoginModal(false)
+    const inputAddress = searchValue.trim()
+    if (!inputAddress) return
+
+    setOriginalAddress(inputAddress)
     setIsLoading(true)
     setLoadingStateIndex(0)
-    setSearchValue(loadingStates[0])
+    setSearchValue(getCurrentStatusText())
 
-    const stateInterval = setInterval(() => {
-      setLoadingStateIndex((prev) => {
-        if (prev < loadingStates.length - 1) {
-          const nextIndex = prev + 1
-          setSearchValue(loadingStates[nextIndex])
-          return nextIndex
-        }
-        return prev
-      })
-    }, 1200)
+    let stateInterval: NodeJS.Timeout | null = null
+    try {
+      const startPromise = startRequest({ address: inputAddress })
 
-    await new Promise((resolve) => setTimeout(resolve, 4800))
+      stateInterval = setInterval(() => {
+        setLoadingStateIndex((prev) => {
+          if (prev < loadingStates.length - 1) {
+            const nextIndex = prev + 1
+            setSearchValue(getCurrentStatusText())
+            return nextIndex
+          }
+          return prev
+        })
+      }, 1200)
 
-    clearInterval(stateInterval)
+      const { appraisalRequestId } = await startPromise
+      setCurrentRequestId(appraisalRequestId)
 
-    router.push(`/results?address=${encodeURIComponent(searchValue)}`)
+      // Keep the user on this page; show friendly status copy below the input
+      // Redirection handled by the effect when complete
+    } catch (err) {
+      if (stateInterval) clearInterval(stateInterval)
+      setIsLoading(false)
+      setSearchValue(originalAddress)
+      console.error(err)
+      // Optionally surface a toast here
+    }
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -130,10 +197,10 @@ export default function HomePage() {
                     By continuing, you agree to our Terms of Service and Privacy Policy
                   </p>
                 </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
       )}
 
       {/* Hero Section */}
@@ -189,57 +256,6 @@ export default function HomePage() {
                     onFocus={() => setIsSearchFocused(true)}
                     onBlur={() => setIsSearchFocused(false)}
                   />
-                </div>
-
-                <div
-                  className={`overflow-hidden transition-all duration-300 ease-out ${showSharePanel ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
-                    }`}
-                >
-                  {showSharePanel && (
-                    <div className="border-t border-border/50 bg-muted/20">
-                      <div className="p-6">
-                        <div className="flex items-center space-x-3 mb-6">
-                          <div className="p-2 rounded-full bg-primary/10">
-                            <Share2 className="h-4 w-4 text-primary" />
-                          </div>
-                          <h3 className="font-serif text-lg font-medium text-foreground">Share Report</h3>
-                        </div>
-
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-sm font-medium text-foreground mb-2">Email address</label>
-                            <div className="relative">
-                              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                              <input
-                                type="email"
-                                placeholder="colleague@example.com"
-                                value={shareEmail}
-                                onChange={(e) => setShareEmail(e.target.value)}
-                                className="w-full rounded-xl border border-border bg-background py-3 pl-10 pr-4 text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="flex space-x-3 pt-2">
-                            <Button
-                              variant="outline"
-                              onClick={() => setShowSharePanel(false)}
-                              className="flex-1 rounded-xl"
-                            >
-                              Cancel
-                            </Button>
-                            <Button
-                              onClick={handleShareReport}
-                              disabled={!shareEmail.trim()}
-                              className="flex-1 rounded-xl bg-primary hover:bg-primary/90"
-                            >
-                              Share Report
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>

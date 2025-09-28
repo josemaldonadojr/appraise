@@ -25,6 +25,16 @@ export const linkWorkflow = internalMutation({
     },
 });
 
+export const updateStatus = internalMutation({
+    args: {
+        requestId: v.id("appraisal_requests"),
+        status: v.string(),
+    },
+    handler: async (ctx, args) => {
+        await ctx.db.patch(args.requestId, { status: args.status });
+    },
+});
+
 export const updateGeocodeResult = internalMutation({
     args: {
         requestId: v.id("appraisal_requests"),

@@ -27,6 +27,11 @@ export const appraisalWorkflow = workflow.define({
         const { appraisalRequestId, address } = args;
 
         try {
+            // Update status to geocoding in progress
+            await step.runMutation(internal.db.mutations.updateStatus, {
+                requestId: appraisalRequestId,
+                status: AppraisalStatus.GEOCODING_IN_PROGRESS,
+            });
 
             const geocodeResult = await step.runAction(internal.external.actions.geocodeAddress, { address });
 
@@ -48,6 +53,12 @@ export const appraisalWorkflow = workflow.define({
                     message: "Geocoding failed: No longitude or latitude found"
                 });
             }
+
+            // Update status to searching comparables
+            await step.runMutation(internal.db.mutations.updateStatus, {
+                requestId: appraisalRequestId,
+                status: AppraisalStatus.SEARCHING_COMPARABLES,
+            });
 
             const comparableAddresses = await step.runAction(internal.external.actions.findComparables, {
                 longitude: geocodeResult.longitude,
@@ -77,6 +88,12 @@ export const appraisalWorkflow = workflow.define({
             });
 
             if (comparableBatchResult.needAccountLookup.length > 0) {
+                // Update status to account lookup in progress
+                await step.runMutation(internal.db.mutations.updateStatus, {
+                    requestId: appraisalRequestId,
+                    status: AppraisalStatus.ACCOUNT_LOOKUP_IN_PROGRESS,
+                });
+
                 const finalResult = await step.runAction(internal.external.actions.planAccountLookup, {
                     comparableAddresses: comparableBatchResult.needAccountLookup,
                 });
@@ -84,6 +101,12 @@ export const appraisalWorkflow = workflow.define({
                 await step.runMutation(internal.db.mutations.saveAccountNumbers, {
                     requestId: appraisalRequestId,
                     accountsToSave: finalResult,
+                });
+
+                // Update status to property scrape in progress
+                await step.runMutation(internal.db.mutations.updateStatus, {
+                    requestId: appraisalRequestId,
+                    status: AppraisalStatus.PROPERTY_SCRAPE_IN_PROGRESS,
                 });
 
                 for (const account of finalResult) {
@@ -107,6 +130,12 @@ export const appraisalWorkflow = workflow.define({
                         }
                     }
                 }
+
+                // Update status to data enriched after enrichment is complete
+                await step.runMutation(internal.db.mutations.updateStatus, {
+                    requestId: appraisalRequestId,
+                    status: AppraisalStatus.DATA_ENRICHED,
+                });
             }
 
             const subjectProperty = await step.runQuery(internal.db.query.getSubjectPropertyByRequestId, {
@@ -267,6 +296,13 @@ export const appraisalWorkflow = workflow.define({
             //     }
             // }
             // console.log(compsReadyForAppraisal.length, 'compsReadyForAppraisal');
+            
+            // Update status to LLM appraisal in progress
+            await step.runMutation(internal.db.mutations.updateStatus, {
+                requestId: appraisalRequestId,
+                status: AppraisalStatus.LLM_APPRAISAL_IN_PROGRESS,
+            });
+
             const appraisalResult = await step.runAction(internal.external.appraise.appraise, {
                 subject: subjectData,
                 comps: compsReadyForAppraisal,
@@ -285,6 +321,12 @@ export const appraisalWorkflow = workflow.define({
             await step.runMutation(internal.external.appraise.saveAppraisalJson, {
                 appraisalRequestId: appraisalRequestId,
                 appraisalJson: appraisalResult,
+            });
+
+            // Mark workflow complete after saving the appraisal JSON
+            await step.runMutation(internal.db.mutations.updateStatus, {
+                requestId: appraisalRequestId,
+                status: AppraisalStatus.APPRAISAL_COMPLETE,
             });
         } catch (error) {
             console.error("Appraisal workflow failed:", error);

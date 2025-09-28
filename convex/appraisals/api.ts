@@ -41,3 +41,16 @@ export const getRequestStatus = query({
         };
     },
 });
+
+export const getAppraisalJson = query({
+    args: { appraisalRequestId: v.id("appraisal_requests") },
+    returns: v.union(v.any(), v.null()),
+    handler: async (ctx, args) => {
+        const doc = await ctx.db
+            .query("appraisal_json")
+            .withIndex("byAppraisalRequest", (q) => q.eq("appraisalRequestId", args.appraisalRequestId))
+            .order("desc")
+            .first();
+        return doc?.appraisalJson ?? null;
+    },
+});

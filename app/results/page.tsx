@@ -7,6 +7,9 @@ import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, Home, Calendar, MapPin, DollarSign, AlertTriangle, FileText } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Suspense } from "react"
+import { useQuery } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import type { Id } from "@/convex/_generated/dataModel"
 
 // Mock data based on the provided JSON
 const mockAppraisalData = {
@@ -50,6 +53,19 @@ function ResultsContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const address = searchParams.get("address") || mockAppraisalData.subject.address
+  const requestId = searchParams.get("requestId") as Id<"appraisal_requests"> | null
+
+  const status = useQuery(
+    api.appraisals.api.getRequestStatus,
+    requestId ? { appraisalRequestId: requestId } : "skip"
+  )
+
+  const appraisalJson = useQuery(
+    api.appraisals.api.getAppraisalJson,
+    requestId ? { appraisalRequestId: requestId } : "skip"
+  )
+
+  const data = appraisalJson || mockAppraisalData
 
   return (
     <div className="min-h-screen bg-background">
@@ -82,14 +98,14 @@ function ResultsContent() {
                 <span className="text-lg">{address}</span>
               </div>
             </div>
-            <div className="text-right">
+              <div className="text-right">
               <div className="text-sm text-muted-foreground mb-1">Appraised Value</div>
               <div className="font-serif text-3xl font-medium text-foreground">
-                ${mockAppraisalData.reconciliation.final_value_opinion.toLocaleString()}
+                ${data.reconciliation.final_value_opinion.toLocaleString()}
               </div>
               <div className="text-sm text-muted-foreground">
-                Range: ${mockAppraisalData.reconciliation.indicated_range.low.toLocaleString()} - $
-                {mockAppraisalData.reconciliation.indicated_range.high.toLocaleString()}
+                Range: ${data.reconciliation.indicated_range.low.toLocaleString()} - $
+                {data.reconciliation.indicated_range.high.toLocaleString()}
               </div>
             </div>
           </div>
@@ -97,7 +113,7 @@ function ResultsContent() {
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              <span>As of {mockAppraisalData.subject.as_of_date}</span>
+              <span>As of {data.subject.as_of_date}</span>
             </div>
             <div className="flex items-center gap-1">
               <Home className="h-4 w-4" />
@@ -115,7 +131,7 @@ function ResultsContent() {
                 <CardTitle className="font-serif font-light">Property Summary</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground leading-relaxed">{mockAppraisalData.subject.summary}</p>
+                <p className="text-muted-foreground leading-relaxed">{data.subject.summary}</p>
               </CardContent>
             </Card>
 
@@ -126,7 +142,7 @@ function ResultsContent() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {mockAppraisalData.comps.map((comp, index) => (
+                  {data.comps.map((comp: any, index: number) => (
                     <div key={index} className="border rounded-lg p-6">
                       <div className="flex items-center justify-between mb-4">
                         <h4 className="font-medium">{comp.id}</h4>
@@ -166,7 +182,7 @@ function ResultsContent() {
                 <CardTitle className="font-serif font-light">Valuation Analysis</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground leading-relaxed">{mockAppraisalData.reconciliation.reasoning}</p>
+                <p className="text-muted-foreground leading-relaxed">{data.reconciliation.reasoning}</p>
               </CardContent>
             </Card>
           </div>
@@ -184,7 +200,7 @@ function ResultsContent() {
               <CardContent className="space-y-4">
                 <div className="text-center p-6 bg-muted/30 rounded-lg">
                   <div className="text-2xl font-serif font-medium text-foreground mb-1">
-                    ${mockAppraisalData.reconciliation.final_value_opinion.toLocaleString()}
+                    ${data.reconciliation.final_value_opinion.toLocaleString()}
                   </div>
                   <div className="text-sm text-muted-foreground">Final Opinion of Value</div>
                 </div>
@@ -195,13 +211,13 @@ function ResultsContent() {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Low Range:</span>
                     <span className="font-medium">
-                      ${mockAppraisalData.reconciliation.indicated_range.low.toLocaleString()}
+                      ${data.reconciliation.indicated_range.low.toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">High Range:</span>
                     <span className="font-medium">
-                      ${mockAppraisalData.reconciliation.indicated_range.high.toLocaleString()}
+                      ${data.reconciliation.indicated_range.high.toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -218,7 +234,7 @@ function ResultsContent() {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3 text-sm">
-                  {mockAppraisalData.risks.map((risk, index) => (
+                  {data.risks.map((risk: string, index: number) => (
                     <li key={index} className="flex items-start gap-2">
                       <div className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
                       <span className="text-muted-foreground leading-relaxed">{risk}</span>

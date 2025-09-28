@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { generateObject } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
+import { AppraisalStatus } from "../appraisals/workflow";
 
 type Subject = Record<string, any>;
 type Comp = Record<string, any>;
@@ -384,6 +385,11 @@ export const saveAppraisalJson = internalMutation({
         await ctx.db.insert("appraisal_json", {
             appraisalRequestId: args.appraisalRequestId,
             appraisalJson: args.appraisalJson,
+        });
+
+        // Update the appraisal request status to complete
+        await ctx.db.patch(args.appraisalRequestId, {
+            status: AppraisalStatus.APPRAISAL_COMPLETE,
         });
     },
 });
