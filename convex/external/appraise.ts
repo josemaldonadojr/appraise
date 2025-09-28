@@ -1,6 +1,5 @@
 import { internalAction } from "../_generated/server";
 import { v } from "convex/values";
-import OpenAI from "openai";
 
 type Subject = Record<string, any>;
 type Comp = Record<string, any>;
@@ -96,69 +95,83 @@ Process
 `.trim();
 }
 
-export function outputFormat(): string {
-    return `
-Output Format
-Return AppraisalJSON: Strictly follow this schema:
-{
-  "subject": {
-    "address": string,
-    "as_of_date": "YYYY-MM-DD",
-    "summary": string
-  },
-  "assumptions": {
-    "gla_rate_per_sqft": number,
-    "bath_full_rate": number,
-    "bath_half_rate": number,
-    "bedroom_rate": number,
-    "basement_finished_rate": number,
-    "garage_rate_per_sqft": number,
-    "lot_adjustment_method": "lump_sum" | "per_sqft" | "none",
-    "time_adjustment_monthly_rate": number | null,
-    "location_adjustments_note": string
-  },
-  "comps": [
-    {
-      "id": string,
-      "sale_date": "YYYY-MM-DD",
-      "unadjusted_price": number,
-      "price_per_sqft": number | null,
-      "differences": {
-        "gla_sqft": number | null,
-        "beds_diff": number | null,
-        "baths_full_diff": number | null,
-        "baths_half_diff": number | null,
-        "basement_finished_sqft_diff": number | null,
-        "garage_sqft_diff": number | null,
-        "lot_diff_descriptor": string | null,
-        "quality_diff_descriptor": string | null,
-        "location_diff_descriptor": string | null,
-        "age_diff_years": number | null
-      },
-      "adjustments": [
-        { "feature": string, "amount": number, "rationale": string }
-      ],
-      "time_adjustment": number,
-      "net_adjustment": number,
-      "adjusted_price": number,
-      "weight": number
-    }
-  ],
-  "reconciliation": {
-    "indicated_range": { "low": number, "high": number },
-    "central_tendency": { "mean": number, "median": number },
-    "weighted_value": number,
-    "final_value_opinion": number,
-    "reasoning": string
-  },
-  "risks": [string]
+// Pipe-delimited helpers derived from external prototype
+const PIPE_HEADERS: Array<string> = [
+    "recordType",
+    "accountNumber",
+    "line1",
+    "city",
+    "state",
+    "postalCode",
+    "baseAreaSqft",
+    "basementAreaSqft",
+    "finishedBasementAreaSqft",
+    "bathrooms",
+    "halfBathrooms",
+    "bedrooms",
+    "parkingAreaSqft",
+    "totalAreaSqft",
+    "yearBuilt",
+    "totalMarketValueUsd",
+    "landValueUsd",
+    "lotSize",
+    "neighborhoodCode",
+    "qualityCode",
+    "propertyType",
+    "salesHistory",
+    "salesHistory.previousOwner",
+    "salesHistory.saleDate",
+    "salesHistory.salePriceUsd",
+    "salesHistory.adjustedSalePriceUsd",
+    "salesHistory.unitPriceSqftUsd",
+];
+
+function sanitizeForPipe(value: unknown): string {
+    const str = String(value ?? "");
+    return str.replace(/\n/g, " ").replace(/\r/g, " ");
 }
-Rules and Ethics
-- Do not fabricate facts outside the provided data.
-- Be explicit where assumptions are made.
-- Keep math traceable and consistent with the stated rates.
-- Do not state compliance or certification; this is an analytical aid only.
-`.trim();
+
+function buildPipeRow(obj: any, recordType: "subject" | "comp"): string {
+    // Handle sales history - get the most recent sale or empty values
+    const salesHistory = obj?.salesHistory?.[0] || {};
+    
+    const values = [
+        recordType,
+        sanitizeForPipe(obj?.accountNumber),
+        sanitizeForPipe(obj?.line1),
+        sanitizeForPipe(obj?.city),
+        sanitizeForPipe(obj?.state),
+        sanitizeForPipe(obj?.postalCode),
+        sanitizeForPipe(obj?.baseAreaSqft),
+        sanitizeForPipe(obj?.basementAreaSqft),
+        sanitizeForPipe(obj?.finishedBasementAreaSqft),
+        sanitizeForPipe(obj?.bathrooms),
+        sanitizeForPipe(obj?.halfBathrooms),
+        sanitizeForPipe(obj?.bedrooms),
+        sanitizeForPipe(obj?.parkingAreaSqft),
+        sanitizeForPipe(obj?.totalAreaSqft),
+        sanitizeForPipe(obj?.yearBuilt),
+        sanitizeForPipe(obj?.totalMarketValueUsd),
+        sanitizeForPipe(obj?.landValueUsd),
+        sanitizeForPipe(obj?.lotSize),
+        sanitizeForPipe(obj?.neighborhoodCode),
+        sanitizeForPipe(obj?.qualityCode),
+        sanitizeForPipe(obj?.propertyType),
+        sanitizeForPipe(obj?.salesHistory ? JSON.stringify(obj.salesHistory) : ""),
+        sanitizeForPipe(salesHistory?.previousOwner),
+        sanitizeForPipe(salesHistory?.saleDate),
+        sanitizeForPipe(salesHistory?.salePriceUsd),
+        sanitizeForPipe(salesHistory?.adjustedSalePriceUsd),
+        sanitizeForPipe(salesHistory?.unitPriceSqftUsd),
+    ];
+    return values.join("|");
+}
+
+export function buildPipeDelimited(subject: Subject, comps: Array<Comp>): string {
+    const headerLine = PIPE_HEADERS.join("|");
+    const subjectLine = buildPipeRow(subject, "subject");
+    const compLines = (Array.isArray(comps) ? comps : []).map((c) => buildPipeRow(c, "comp"));
+    return [headerLine, subjectLine, ...compLines].join("\n");
 }
 
 export function composePrompt(subject: Subject, comps: Comp[], cfg: RatesConfig): string {
@@ -169,7 +182,6 @@ export function composePrompt(subject: Subject, comps: Comp[], cfg: RatesConfig)
         constraints(),
         adjustmentGuidelines(cfg),
         processSection(),
-        outputFormat(),
     ].join("\n\n");
 }
 
@@ -285,6 +297,10 @@ export const appraise = internalAction({
     returns: v.null(),
     handler: async (ctx, args) => {
         const prompt = composePrompt(args.subject, args.comps, args.cfg);
-        console.log(prompt, 'prompt')
+        console.log(prompt, 'prompt');
+
+        // Build pipe-delimited representation of subject and comps
+        const pipeDelimited = buildPipeDelimited(args.subject, args.comps);
+        console.log(pipeDelimited, 'pipeDelimited');
     },
 });
