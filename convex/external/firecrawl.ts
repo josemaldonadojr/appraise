@@ -25,7 +25,7 @@ export type AddressSearchOptions = {
 const DEFAULT_CONFIG: Omit<FirecrawlConfig, 'apiKey'> = {
     baseUrl: 'https://lookups.sccmo.org/assessor/search',
     cacheMaxAge: 172800000, // 2 days in milliseconds
-    resultsPerPage: 10,
+    resultsPerPage: 1,
 };
 
 // Zod schema for address search results
@@ -74,7 +74,7 @@ export function parseAddressSearchResponse(response: any): AddressSearchResult[]
 }
 
 export async function searchAddressesWithFirecrawl(
-    address: string, 
+    address: string,
     options: AddressSearchOptions = {}
 ): Promise<AddressSearchResult[]> {
     const config: FirecrawlConfig = {
@@ -85,7 +85,7 @@ export async function searchAddressesWithFirecrawl(
     const app = createFirecrawlApp(config.apiKey);
     const streetName = extractStreetNameFromAddress(address);
     const searchUrl = buildAssessorSearchUrl(streetName, config);
-    
+
     console.log(`Searching addresses for: ${address} (street: ${streetName})`);
 
     try {
@@ -103,7 +103,7 @@ export async function searchAddressesWithFirecrawl(
         });
 
         const addresses = parseAddressSearchResponse(result);
-        
+
         if (addresses.length === 0) {
             throw new ConvexError({
                 code: "AddressSearchError",
@@ -118,7 +118,7 @@ export async function searchAddressesWithFirecrawl(
         if (error instanceof ConvexError) {
             throw error;
         }
-        
+
         console.error('Address search error:', error);
         throw new ConvexError({
             code: "AddressSearchError",
@@ -127,8 +127,77 @@ export async function searchAddressesWithFirecrawl(
     }
 }
 
+// Types for batch property scraping
+export type AccountResult = {
+    address: string | null;
+    accountNumber: string | null;
+};
+
+export type BatchPropertyResult = {
+    address: string;
+    accountNumber: string | null;
+    propertyData: any;
+    success: boolean;
+    error?: string;
+};
+
+const schema = {
+    type: "object",
+    properties: {
+        bath: { type: "number" },
+        bedrooms: { type: "number" },
+    },
+    required: ["bath", "bedrooms"]
+};
+
+export async function batchScrapePropertyDetails(
+    accountResults: AccountResult[]
+): Promise<void> {
+    const config: FirecrawlConfig = {
+        ...DEFAULT_CONFIG,
+        apiKey: process.env.FIRECRAWL_API_KEY || ''
+    };
+
+    const app = createFirecrawlApp(config.apiKey);
+
+    const validResults = accountResults.filter(result => result.accountNumber);
+    const detailUrls = validResults.map(result =>
+        `https://lookups.sccmo.org/assessor/details/${result.accountNumber}`
+    );
+
+    if (detailUrls.length === 0) {
+        console.log('No valid account numbers found for batch scraping');
+        return;
+    }
+
+    try {
+        const batchScrapeResult = await app.batchScrape(detailUrls, {
+            options: {
+                formats: [
+                    {
+                        type: "json",
+                        prompt: "Extract the bath and bedrooms from the page.",
+                        schema: schema
+                    }
+                ]
+            }
+        });
+
+        if (batchScrapeResult.status === "completed") {
+            console.log(batchScrapeResult.data)
+        }
+
+        // if (batchScrapeStatus.status === "completed") {
+        //     console.log(batchScrapeJob.data)
+        // }
+
+    } catch (error) {
+        console.error('Batch scrape failed:', error);
+    }
+}
+
 export const searchAddresses = internalAction({
-    args: { 
+    args: {
         address: v.string(),
         includeDetails: v.optional(v.boolean())
     },
@@ -139,5 +208,18 @@ export const searchAddresses = internalAction({
         return await searchAddressesWithFirecrawl(args.address, {
             includeDetails: args.includeDetails
         });
+    },
+});
+
+export const batchScrapePropertyDetailsAction = internalAction({
+    args: {
+        accountResults: v.array(v.object({
+            address: v.union(v.string(), v.null()),
+            accountNumber: v.union(v.string(), v.null())
+        }))
+    },
+    returns: v.null(),
+    handler: async (ctx, args) => {
+        await batchScrapePropertyDetails(args.accountResults);
     },
 });

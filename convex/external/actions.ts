@@ -307,6 +307,7 @@ export const lookupSingleAccount = internalAction({
             url.searchParams.set("reset_session", "true");
             url.searchParams.set("SitusName", args.address);
             url.searchParams.set("searchPropertyType[0]", "0");
+            url.searchParams.set("results_per_page", "3");
 
             const response = await fetch(url.toString(), {
                 method: 'GET',
@@ -323,7 +324,7 @@ export const lookupSingleAccount = internalAction({
             const csvContent = await response.text();
             const rows = parseCSV(csvContent);
             const accountId = rows.length > 0 ? getAccountIdFromRow(rows[0]) : "";
-
+            console.log(`Account ID for ${args.address}: ${accountId}`);
             return {
                 address: args.address,
                 accountNumber: accountId,

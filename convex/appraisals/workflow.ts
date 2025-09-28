@@ -41,8 +41,6 @@ export const appraisalWorkflow = workflow.define({
                 });
             }
 
-            console.log(foundAddresses, 'foundAddresses');
-
             const accountLookupPromises = foundAddresses.map(addressResult =>
                 step.runAction(internal.external.actions.lookupSingleAccount, {
                     address: addressResult.address,
@@ -50,6 +48,11 @@ export const appraisalWorkflow = workflow.define({
             );
 
             const accountResults = await Promise.all(accountLookupPromises);
+
+
+            await step.runAction(internal.external.firecrawl.batchScrapePropertyDetailsAction, {
+                accountResults: accountResults
+            });
 
             //     await step.runMutation(internal.db.mutations.saveAccountNumbers, {
             //         requestId: appraisalRequestId,
