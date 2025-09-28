@@ -146,8 +146,10 @@ const schema = {
     properties: {
         bath: { type: "number" },
         bedrooms: { type: "number" },
+        subdivision: { type: "string" },
+        fireplaces: { type: "number" },
     },
-    required: ["bath", "bedrooms"]
+    required: ["bath", "bedrooms", "fireplaces", "subdivision"]
 };
 
 export async function batchScrapePropertyDetails(
@@ -176,7 +178,7 @@ export async function batchScrapePropertyDetails(
                 formats: [
                     {
                         type: "json",
-                        prompt: "Extract the bath and bedrooms from the page.",
+                        prompt: "Extract the bath and bedrooms and subdivision and fireplaces from the page.",
                         schema: schema
                     }
                 ]
