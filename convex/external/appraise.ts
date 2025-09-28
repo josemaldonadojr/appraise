@@ -4,6 +4,7 @@ import OpenAI from "openai";
 
 type Subject = Record<string, any>;
 type Comp = Record<string, any>;
+type SalesHistory = Record<string, any>;
 
 export type RatesConfig = {
     glaRateStart: number; // e.g., 90
@@ -23,7 +24,7 @@ You are a licensed residential real estate appraiser producing a sales compariso
 analysis for a single-family residence. Follow USPAP-style rigor in reasoning,
 but do not claim USPAP compliance. Use only the data provided unless explicitly
 stated. Be conservative, consistent, and explain adjustments clearly. Output
-both a concise narrative and a structured JSON result.
+a structured JSON result.
 `.trim();
 }
 
@@ -98,10 +99,7 @@ Process
 export function outputFormat(): string {
     return `
 Output Format
-Return both:
-A) NarrativeSummary: 150–300 words, plain language.
-B) AppraisalJSON: Strictly follow this schema:
-
+Return AppraisalJSON: Strictly follow this schema:
 {
   "subject": {
     "address": string,
@@ -172,7 +170,6 @@ export function composePrompt(subject: Subject, comps: Comp[], cfg: RatesConfig)
         adjustmentGuidelines(cfg),
         processSection(),
         outputFormat(),
-        "Now use these inputs:\n- SUBJECT_JSON:\n<inject subject JSON here>\n\n- COMPS_JSON:\n<inject comps JSON array here>\n\nDeliverables\n- NarrativeSummary\n- AppraisalJSON",
     ].join("\n\n");
 }
 
@@ -218,6 +215,13 @@ export const appraise = internalAction({
             residentialValueUsd: v.union(v.number(), v.null()),
             totalMarketValueUsd: v.union(v.number(), v.null()),
             finishedBasementAreaSqft: v.union(v.number(), v.null()),
+            salesHistory: v.array(v.object({
+                previousOwner: v.union(v.string(), v.null()),
+                saleDate: v.union(v.string(), v.null()),
+                salePriceUsd: v.union(v.number(), v.null()),
+                adjustedSalePriceUsd: v.union(v.number(), v.null()),
+                unitPriceSqftUsd: v.union(v.number(), v.null()),
+            })),
         }),
         comps: v.array(v.object({
             line1: v.union(v.string(), v.null()),
@@ -259,6 +263,13 @@ export const appraise = internalAction({
             residentialValueUsd: v.union(v.number(), v.null()),
             totalMarketValueUsd: v.union(v.number(), v.null()),
             finishedBasementAreaSqft: v.union(v.number(), v.null()),
+            salesHistory: v.array(v.object({
+                previousOwner: v.union(v.string(), v.null()),
+                saleDate: v.union(v.string(), v.null()),
+                salePriceUsd: v.union(v.number(), v.null()),
+                adjustedSalePriceUsd: v.union(v.number(), v.null()),
+                unitPriceSqftUsd: v.union(v.number(), v.null()),
+            })),
         })),
         cfg: v.object({
             glaRateStart: v.number(),

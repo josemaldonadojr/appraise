@@ -113,6 +113,10 @@ export const appraisalWorkflow = workflow.define({
                 appraisalRequestId: appraisalRequestId,
             });
 
+            const subjectSalesHistory = await step.runQuery(internal.db.query.getSalesHistoryByPropertyId, {
+                propertyId: subjectProperty[0]._id,
+            });
+
             // Extract only the relevant fields, excluding system fields like _id and _creationTime
             const subject = subjectProperty[0];
             const subjectData = {
@@ -154,6 +158,7 @@ export const appraisalWorkflow = workflow.define({
                 residentialValueUsd: subject.residentialValueUsd,
                 totalMarketValueUsd: subject.totalMarketValueUsd,
                 finishedBasementAreaSqft: subject.finishedBasementAreaSqft,
+                salesHistory: subjectSalesHistory,
             };
 
             // Get comparables from database
@@ -164,6 +169,11 @@ export const appraisalWorkflow = workflow.define({
             // Format comparables for appraisal
             const compsReadyForAppraisal = [];
             for (const comparable of comparables) {
+                const comparableSalesHistory = await step.runQuery(internal.db.query.getSalesHistoryByPropertyId, {
+                    propertyId: comparable._id,
+                });
+
+
                 if (comparable.accountNumber) {
                     const comparableData = {
                         line1: comparable.line1,
@@ -204,6 +214,7 @@ export const appraisalWorkflow = workflow.define({
                         residentialValueUsd: comparable.residentialValueUsd,
                         totalMarketValueUsd: comparable.totalMarketValueUsd,
                         finishedBasementAreaSqft: comparable.finishedBasementAreaSqft,
+                        salesHistory: comparableSalesHistory,
                     };
                     compsReadyForAppraisal.push(comparableData);
                 }

@@ -43,6 +43,18 @@ export const getSalesHistoryByPropertyId = internalQuery({
     },
     returns: v.array(v.any()),
     handler: async (ctx, args) => {
-        return await ctx.db.query("sales_history").withIndex("byProperty", (q) => q.eq("propertyId", args.propertyId)).collect();
+        const salesHistory = await ctx.db.query("sales_history").withIndex("byProperty", (q) => q.eq("propertyId", args.propertyId)).collect();
+        const returnSalesHistory = [];
+        for (const sale of salesHistory) {
+            const returnedSale = {
+                previousOwner: sale.previousOwner,
+                saleDate: sale.saleDate,
+                salePriceUsd: sale.salePriceUsd,
+                adjustedSalePriceUsd: sale.adjustedSalePriceUsd,
+                unitPriceSqftUsd: sale.unitPriceSqftUsd,
+            }
+            returnSalesHistory.push(returnedSale);
+        }
+        return returnSalesHistory;
     },
 });
