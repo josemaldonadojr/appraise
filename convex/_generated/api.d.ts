@@ -15,6 +15,7 @@ import type * as db_mutations from "../db/mutations.js";
 import type * as db_query from "../db/query.js";
 import type * as external_actions from "../external/actions.js";
 import type * as external_appraise from "../external/appraise.js";
+import type * as external_firecrawl from "../external/firecrawl.js";
 import type * as geocode from "../geocode.js";
 import type * as http from "../http.js";
 import type * as workflows_index from "../workflows/index.js";
@@ -41,6 +42,7 @@ declare const fullApi: ApiFromModules<{
   "db/query": typeof db_query;
   "external/actions": typeof external_actions;
   "external/appraise": typeof external_appraise;
+  "external/firecrawl": typeof external_firecrawl;
   geocode: typeof geocode;
   http: typeof http;
   "workflows/index": typeof workflows_index;
