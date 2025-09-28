@@ -33,7 +33,21 @@ export const appraisalWorkflow = workflow.define({
                 status: AppraisalStatus.GEOCODING_IN_PROGRESS,
             });
 
-            const geocodeResult = await step.runAction(internal.external.actions.geocodeAddress, { address });
+            // Search for addresses using St. Charles County assessor API
+            const foundAddresses = await step.runAction(internal.external.actions.searchAddresses, { address });
+
+            if (foundAddresses.length === 0) {
+                throw new ConvexError({
+                    code: "AddressSearchError",
+                    message: "No addresses found for the given street"
+                });
+            }
+
+            // Use the first found address for the subject property
+            const subjectAddress = foundAddresses[0].address;
+            
+            // Geocode the found address to get coordinates
+            const geocodeResult = await step.runAction(internal.external.actions.geocodeAddress, { address: subjectAddress });
 
             await step.runMutation(internal.db.mutations.updateGeocodeResult, {
                 requestId: appraisalRequestId,
@@ -60,25 +74,31 @@ export const appraisalWorkflow = workflow.define({
                 status: AppraisalStatus.SEARCHING_COMPARABLES,
             });
 
-            const comparableAddresses = await step.runAction(internal.external.actions.findComparables, {
-                longitude: geocodeResult.longitude,
-                latitude: geocodeResult.latitude,
-            });
+            // Use the found addresses as comparables (excluding the first one which is the subject)
+            const comparableAddresses = foundAddresses.slice(1); // Skip the first address (subject property)
 
             const geocodedComparables = [];
             for (const comparable of comparableAddresses) {
-                if (comparable.fullAddress) {
+                if (comparable.address) {
                     try {
                         const geocodedComparable = await step.runAction(internal.external.actions.geocodeAddress, {
-                            address: comparable.fullAddress
+                            address: comparable.address
                         });
                         geocodedComparables.push(geocodedComparable);
                     } catch (error) {
-                        console.error(`Failed to geocode comparable address: ${comparable.fullAddress}`, error);
-                        geocodedComparables.push(comparable);
+                        console.error(`Failed to geocode comparable address: ${comparable.address}`, error);
+                        // If geocoding fails, create a basic comparable with just the address
+                        geocodedComparables.push({
+                            line1: comparable.address,
+                            fullAddress: comparable.address,
+                            city: null,
+                            state: null,
+                            postalCode: null,
+                            countryCode: null,
+                            longitude: null,
+                            latitude: null,
+                        });
                     }
-                } else {
-                    geocodedComparables.push(comparable);
                 }
             }
 

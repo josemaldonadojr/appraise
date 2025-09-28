@@ -358,6 +358,124 @@ export const planAccountLookup = internalAction({
     },
 });
 
+/**
+ * Extract street name from address by removing house numbers
+ */
+function extractStreetName(address: string): string {
+    // Remove leading numbers and any leading/trailing whitespace
+    return address.replace(/^\d+\s*/, '').trim();
+}
+
+/**
+ * Search for addresses using St. Charles County assessor API with Firecrawl
+ */
+export const searchAddresses = internalAction({
+    args: { address: v.string() },
+    returns: v.array(v.object({
+        address: v.string(),
+    })),
+    handler: async (ctx, args) => {
+        console.log(`Searching addresses for: ${args.address}`);
+        
+        if (!process.env.FIRECRAWL_API_KEY) {
+            throw new ConvexError({
+                code: "ConfigurationError",
+                message: "FIRECRAWL_API_KEY environment variable not set"
+            });
+        }
+
+        try {
+            // Extract street name from the address (remove house numbers)
+            const streetName = extractStreetName(args.address);
+            console.log(`Extracted street name: ${streetName}`);
+
+            // Build the St. Charles County assessor search URL
+            const searchUrl = new URL("https://lookups.sccmo.org/assessor/search");
+            searchUrl.searchParams.set("reset_session", "true");
+            searchUrl.searchParams.set("SitusName", streetName);
+            searchUrl.searchParams.set("searchPropertyType[0]", "0");
+            searchUrl.searchParams.set("results_per_page", "10");
+
+            const firecrawlOptions = {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${process.env.FIRECRAWL_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    "url": searchUrl.toString(),
+                    "onlyMainContent": true,
+                    "maxAge": 172800000,
+                    "parsers": ["pdf"],
+                    "formats": [
+                        {
+                            "type": "json",
+                            "schema": {
+                                "type": "object",
+                                "required": [],
+                                "properties": {
+                                    "addresses": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "required": [],
+                                            "properties": {
+                                                "address": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "origin": "website",
+                    "proxy": "stealth"
+                })
+            };
+
+            const response = await fetch('https://api.firecrawl.dev/v2/scrape', firecrawlOptions);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`❌ Firecrawl API error! Status: ${response.status}, Body: ${errorText}`);
+                throw new ConvexError({
+                    code: "AddressSearchError",
+                    message: `Firecrawl API error: ${response.status} ${response.statusText}`
+                });
+            }
+
+            const firecrawlData = await response.json();
+
+            let addresses = [];
+            if (firecrawlData.data && firecrawlData.data.json && firecrawlData.data.json.addresses) {
+                addresses = firecrawlData.data.json.addresses;
+            } else if (firecrawlData.json && firecrawlData.json.addresses) {
+                addresses = firecrawlData.json.addresses;
+            } else {
+                console.error(`No addresses found in response. Full response:`, firecrawlData);
+                throw new ConvexError({
+                    code: "AddressSearchError",
+                    message: "No addresses found in Firecrawl response"
+                });
+            }
+
+            console.log(`Found ${addresses.length} addresses`);
+            return addresses;
+
+        } catch (error) {
+            if (error instanceof ConvexError) {
+                throw error;
+            }
+            throw new ConvexError({
+                code: "AddressSearchError",
+                message: `Address search failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+            });
+        }
+    },
+});
+
 export const enrichPropertyData = internalAction({
     args: {
         accountNumber: v.string(),
