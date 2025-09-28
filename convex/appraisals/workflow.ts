@@ -32,7 +32,6 @@ export const appraisalWorkflow = workflow.define({
                 status: AppraisalStatus.GEOCODING_IN_PROGRESS,
             });
 
-            // Search for addresses using St. Charles County assessor API
             const foundAddresses = await step.runAction(internal.external.firecrawl.searchAddresses, { address });
 
             if (foundAddresses.length === 0) {
@@ -44,80 +43,13 @@ export const appraisalWorkflow = workflow.define({
 
             console.log(foundAddresses, 'foundAddresses');
 
-            // // Use the first found address for the subject property
-            // const subjectAddress = foundAddresses[0].address;
+            const accountLookupPromises = foundAddresses.map(addressResult =>
+                step.runAction(internal.external.actions.lookupSingleAccount, {
+                    address: addressResult.address,
+                })
+            );
 
-            // // Geocode the found address to get coordinates
-            // const geocodeResult = await step.runAction(internal.external.actions.geocodeAddress, { address: subjectAddress });
-
-            // await step.runMutation(internal.db.mutations.updateGeocodeResult, {
-            //     requestId: appraisalRequestId,
-            //     line1: geocodeResult.line1,
-            //     fullAddress: geocodeResult.fullAddress,
-            //     city: geocodeResult.city,
-            //     state: geocodeResult.state,
-            //     postalCode: geocodeResult.postalCode,
-            //     countryCode: geocodeResult.countryCode,
-            //     longitude: geocodeResult.longitude,
-            //     latitude: geocodeResult.latitude,
-            // });
-
-            // if (!geocodeResult.longitude || !geocodeResult.latitude) {
-            //     throw new ConvexError({
-            //         code: "GeocodingError",
-            //         message: "Geocoding failed: No longitude or latitude found"
-            //     });
-            // }
-
-            // // Update status to searching comparables
-            // await step.runMutation(internal.db.mutations.updateStatus, {
-            //     requestId: appraisalRequestId,
-            //     status: AppraisalStatus.SEARCHING_COMPARABLES,
-            // });
-
-            // Use the found addresses as comparables (excluding the first one which is the subject)
-            // const comparableAddresses = foundAddresses.slice(1); // Skip the first address (subject property)
-
-            // const geocodedComparables = [];
-            // for (const comparable of comparableAddresses) {
-            //     if (comparable.address) {
-            //         try {
-            //             const geocodedComparable = await step.runAction(internal.external.actions.geocodeAddress, {
-            //                 address: comparable.address
-            //             });
-            //             geocodedComparables.push(geocodedComparable);
-            //         } catch (error) {
-            //             console.error(`Failed to geocode comparable address: ${comparable.address}`, error);
-            //             // If geocoding fails, create a basic comparable with just the address
-            //             geocodedComparables.push({
-            //                 line1: comparable.address,
-            //                 fullAddress: comparable.address,
-            //                 city: null,
-            //                 state: null,
-            //                 postalCode: null,
-            //                 countryCode: null,
-            //                 longitude: null,
-            //                 latitude: null,
-            //             });
-            //         }
-            //     }
-            // }
-
-            // const comparableBatchResult = await step.runMutation(internal.db.mutations.saveComparableBatch, {
-            //     requestId: appraisalRequestId,
-            //     comparableProperties: geocodedComparables,
-            // });
-
-            // if (comparableBatchResult.needAccountLookup.length > 0) {
-            //     // Update status to account lookup in progress
-            //     await step.runMutation(internal.db.mutations.updateStatus, {
-            //         requestId: appraisalRequestId,
-            //         status: AppraisalStatus.ACCOUNT_LOOKUP_IN_PROGRESS,
-            //     });
-
-            //     const finalResult = await step.runAction(internal.external.actions.planAccountLookup, {
-            //         comparableAddresses: comparableBatchResult.needAccountLookup,
-            //     });
+            const accountResults = await Promise.all(accountLookupPromises);
 
             //     await step.runMutation(internal.db.mutations.saveAccountNumbers, {
             //         requestId: appraisalRequestId,
