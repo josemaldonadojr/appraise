@@ -14,48 +14,11 @@ import type { Id } from "@/convex/_generated/dataModel"
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Comp = Record<string, any>;
 
-// Mock data based on the provided JSON
-const mockAppraisalData = {
-  subject: {
-    address: "5756 Westchester Farm Drive, Weldon Spring, Missouri 63304, United States",
-    as_of_date: "2025-09-27",
-    summary:
-      "1-story ranch, 3 bed, 2.5 bath, 2,384 sqft GLA, built 1994, full unfinished basement (2,276 sqft), ~542 sqft garage, 0.46 ac lot, Estates at Westchester Farm #2.",
-  },
-  reconciliation: {
-    final_value_opinion: 520000,
-    indicated_range: { low: 505000, high: 540000 },
-    reasoning:
-      "Only one arm's-length, same-subdivision sale (2016) available. After applying a conservative monthly market factor (0.004) and modest physical adjustments, the indicated value is ~$523k. Given single-sale reliance and model risk around time adjustment, I bracket a ±3% range and conclude slightly below the single-point indicator for conservatism.",
-  },
-  comps: [
-    {
-      id: "Comp-2 A943001528 (5759 Westchester Farm Dr)",
-      sale_date: "2016-07-20",
-      unadjusted_price: 364000,
-      adjusted_price: 523256,
-      differences: {
-        gla_sqft: 29,
-        beds_diff: 0,
-        baths_full_diff: 0,
-        baths_half_diff: -1,
-        garage_sqft_diff: -82,
-      },
-    },
-  ],
-  risks: [
-    "Single usable comparable sale; heightened sensitivity to time-adjustment assumption.",
-    "Older sale date (2016) requires substantial market conditions adjustment.",
-    "No data on updates/condition beyond quality code; latent condition variance possible.",
-    "Basement finish status relies on the provided fields; any finished area would affect value.",
-    "Garage sizes based on reported parking area; measurement method differences could exist.",
-  ],
-}
 
 function ResultsContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const address = searchParams.get("address") || mockAppraisalData.subject.address
+  const address = searchParams.get("address") || "Address not provided"
   const requestId = searchParams.get("requestId") as Id<"appraisal_requests"> | null
 
   const appraisalJson = useQuery(
@@ -63,7 +26,56 @@ function ResultsContent() {
     requestId ? { appraisalRequestId: requestId } : "skip"
   )
 
-  const data = appraisalJson || mockAppraisalData
+  const hasData = appraisalJson && requestId
+
+  if (!hasData) {
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Header */}
+        <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between">
+              <Button variant="ghost" onClick={() => router.back()} className="flex items-center gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Back to Search
+              </Button>
+              <Badge variant="secondary" className="font-medium">
+                <FileText className="mr-1 h-3 w-3" />
+                AI Appraisal Report
+              </Badge>
+            </div>
+          </div>
+        </div>
+
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="text-center py-16">
+            <div className="mx-auto max-w-md">
+              <AlertTriangle className="h-16 w-16 mx-auto text-muted-foreground mb-6" />
+              <h1 className="font-serif text-2xl font-light text-foreground mb-4">
+                Appraisal Not Available
+              </h1>
+              <p className="text-muted-foreground mb-8 leading-relaxed">
+                {requestId 
+                  ? "The appraisal data could not be retrieved. This may be because the appraisal is still processing or there was an error."
+                  : "No appraisal request was found. Please try searching for a property again."
+                }
+              </p>
+              <div className="space-y-3">
+                <Button onClick={() => router.push('/')} className="w-full">
+                  Start New Search
+                </Button>
+                <Button variant="outline" onClick={() => router.back()} className="w-full">
+                  Go Back
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const data = appraisalJson
 
   return (
     <div className="min-h-screen bg-background">
@@ -110,10 +122,6 @@ function ResultsContent() {
 
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              <span>As of {data.subject.as_of_date}</span>
-            </div>
-            <div className="flex items-center gap-1">
               <Home className="h-4 w-4" />
               <span>Single Family Residence</span>
             </div>
@@ -144,10 +152,15 @@ function ResultsContent() {
                     <div key={index} className="border rounded-lg p-6">
                       <div className="flex items-center justify-between mb-4">
                         <h4 className="font-medium">{comp.id}</h4>
-                        <Badge variant="outline">Primary Comparable</Badge>
+                        <div className="flex gap-2">
+                          <Badge variant="outline">Weight: {(comp.weight * 100).toFixed(0)}%</Badge>
+                          {comp.price_per_sqft && (
+                            <Badge variant="secondary">${comp.price_per_sqft.toFixed(1)}/sf</Badge>
+                          )}
+                        </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                         <div>
                           <span className="text-muted-foreground">Sale Date:</span>
                           <span className="ml-2 font-medium">{comp.sale_date}</span>
@@ -157,7 +170,15 @@ function ResultsContent() {
                           <span className="ml-2 font-medium">${comp.unadjusted_price.toLocaleString()}</span>
                         </div>
                         <div>
-                          <span className="text-muted-foreground">Adjusted Price:</span>
+                          <span className="text-muted-foreground">Time Adjustment:</span>
+                          <span className="ml-2 font-medium">${comp.time_adjustment.toLocaleString()}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Net Adjustments:</span>
+                          <span className="ml-2 font-medium">${comp.net_adjustment.toLocaleString()}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Final Adjusted Price:</span>
                           <span className="ml-2 font-medium text-primary">${comp.adjusted_price.toLocaleString()}</span>
                         </div>
                         <div>
@@ -168,8 +189,87 @@ function ResultsContent() {
                           </span>
                         </div>
                       </div>
+
+                      {/* Adjustments Detail */}
+                      {comp.adjustments && comp.adjustments.length > 0 && (
+                        <div className="mt-4">
+                          <h5 className="font-medium mb-3 text-sm">Feature Adjustments</h5>
+                          <div className="space-y-2">
+                            {comp.adjustments.map((adjustment: any, adjIndex: number) => (
+                              <div key={adjIndex} className="flex justify-between items-start text-xs bg-muted/30 p-2 rounded">
+                                <div className="flex-1">
+                                  <span className="font-medium">{adjustment.feature}:</span>
+                                  <span className="ml-1 text-muted-foreground">{adjustment.rationale}</span>
+                                </div>
+                                <span className={`font-medium ml-2 ${adjustment.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                  {adjustment.amount >= 0 ? '+' : ''}${adjustment.amount.toLocaleString()}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Valuation Assumptions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-serif font-light">Valuation Assumptions & Rates</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <h5 className="font-medium text-sm">Adjustment Rates</h5>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">GLA Rate:</span>
+                        <span className="font-medium">${data.assumptions.gla_rate_per_sqft}/sqft</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Bedroom Rate:</span>
+                        <span className="font-medium">${data.assumptions.bedroom_rate}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Full Bath Rate:</span>
+                        <span className="font-medium">${data.assumptions.bath_full_rate}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Half Bath Rate:</span>
+                        <span className="font-medium">${data.assumptions.bath_half_rate}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Garage Rate:</span>
+                        <span className="font-medium">${data.assumptions.garage_rate_per_sqft}/sqft</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Basement Finished Rate:</span>
+                        <span className="font-medium">${data.assumptions.basement_finished_rate}/sqft</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <h5 className="font-medium text-sm">Market Conditions</h5>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Time Adjustment:</span>
+                        <span className="font-medium">{(data.assumptions.time_adjustment_monthly_rate * 100).toFixed(2)}%/month</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Lot Method:</span>
+                        <span className="font-medium capitalize">{data.assumptions.lot_adjustment_method.replace('_', ' ')}</span>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <h5 className="font-medium text-sm mb-2">Location Analysis</h5>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {data.assumptions.location_adjustments_note}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -201,6 +301,29 @@ function ResultsContent() {
                     ${data.reconciliation.final_value_opinion.toLocaleString()}
                   </div>
                   <div className="text-sm text-muted-foreground">Final Opinion of Value</div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Weighted Value:</span>
+                    <span className="font-medium">
+                      ${data.reconciliation.weighted_value.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Mean:</span>
+                    <span className="font-medium">
+                      ${data.reconciliation.central_tendency.mean.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Median:</span>
+                    <span className="font-medium">
+                      ${data.reconciliation.central_tendency.median.toLocaleString()}
+                    </span>
+                  </div>
                 </div>
 
                 <Separator />
