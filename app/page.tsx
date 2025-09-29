@@ -52,20 +52,6 @@ export default function HomePage() {
     failed: "We encountered an issue while preparing your report.",
   }), [])
 
-  useEffect(() => {
-    if (!currentRequestId) return
-    if (statusResult?.status === "done" && appraisalJson) {
-      router.push(`/results?requestId=${currentRequestId}`)
-    }
-  }, [currentRequestId, statusResult?.status, appraisalJson, router, originalAddress])
-
-  // Update search input text when status changes
-  useEffect(() => {
-    if (isLoading && currentRequestId) {
-      setSearchValue(getCurrentStatusText())
-    }
-  }, [statusResult?.status, isLoading, currentRequestId])
-
   const loadingStates = [
     "Starting your appraisal...",
     "Verifying property details...",
@@ -80,6 +66,13 @@ export default function HomePage() {
     }
     return loadingStates[loadingStateIndex]
   }
+
+  useEffect(() => {
+    if (!currentRequestId) return
+    if (statusResult?.status === "done" && appraisalJson) {
+      router.push(`/results?requestId=${currentRequestId}`)
+    }
+  }, [currentRequestId, statusResult?.status, appraisalJson, router, originalAddress])
 
   const handleSearch = async () => {
     if (!searchValue.trim()) return
