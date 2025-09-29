@@ -110,7 +110,7 @@ export const appraisalWorkflow = workflow.define({
             const propertyAddress = subject.address;
             const estimatedValue = `$${indicated_range.low.toLocaleString()} - $${indicated_range.high.toLocaleString()}`;
             const reportId = appraisalRequestId;
-            const viewReportUrl = `https://appraise-beta.vercel.app/results?requestId=${appraisalRequestId}`;
+            const viewReportUrl = `https://appraisement.co/results?requestId=${appraisalRequestId}`;
 
             await step.runAction(internal.external.resend.sendTestEmail, {
                 userName,
