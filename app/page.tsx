@@ -55,7 +55,7 @@ export default function HomePage() {
   useEffect(() => {
     if (!currentRequestId) return
     if (statusResult?.status === "done" && appraisalJson) {
-      router.push(`/results?requestId=${currentRequestId}&address=${encodeURIComponent(originalAddress)}`)
+      router.push(`/results?requestId=${currentRequestId}`)
     }
   }, [currentRequestId, statusResult?.status, appraisalJson, router, originalAddress])
 

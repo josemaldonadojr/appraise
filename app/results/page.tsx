@@ -18,7 +18,6 @@ type Comp = Record<string, any>;
 function ResultsContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const address = searchParams.get("address") || "Address not provided"
   const requestId = searchParams.get("requestId") as Id<"appraisal_requests"> | null
 
   const appraisalJson = useQuery(
@@ -27,6 +26,7 @@ function ResultsContent() {
   )
 
   const hasData = appraisalJson && requestId
+  const address = appraisalJson?.subject?.address || "Address not provided"
 
   if (!hasData) {
     return (

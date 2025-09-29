@@ -103,6 +103,22 @@ export const appraisalWorkflow = workflow.define({
                 requestId: appraisalRequestId,
                 status: "done",
             });
+
+            const { reconciliation, subject } = appraisalResult;
+            const { final_value_opinion, indicated_range } = reconciliation;
+            const userName = "Jose";
+            const propertyAddress = subject.address;
+            const estimatedValue = `$${indicated_range.low.toLocaleString()} - $${indicated_range.high.toLocaleString()}`;
+            const reportId = appraisalRequestId;
+            const viewReportUrl = `https://appraisement.co/results?requestId=${appraisalRequestId}`;
+
+            await step.runAction(internal.external.resend.sendTestEmail, {
+                userName,
+                propertyAddress,
+                estimatedValue,
+                appraisalId: reportId,
+                viewReportUrl
+            });
         } catch (error) {
             console.error("Appraisal workflow failed:", error);
 

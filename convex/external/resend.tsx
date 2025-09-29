@@ -4,6 +4,7 @@ import { components } from "../_generated/api";
 import { Resend } from "@convex-dev/resend";
 import { internalAction } from "../_generated/server";
 import { render, pretty } from "@react-email/render";
+import { v } from "convex/values";
 
 import {
     Body,
@@ -163,12 +164,33 @@ const AppraisalReadyEmail = (props: any) => {
 
 
 export const sendTestEmail = internalAction({
-    args: {},
-    handler: async (ctx) => {
+    args: {
+        userName: v.string(),
+        propertyAddress: v.string(),
+        estimatedValue: v.string(),
+        appraisalId: v.string(),
+        viewReportUrl: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const timestamp = new Date().toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            timeZoneName: 'short'
+        });
 
         const html = await pretty(
             await render(
-                <AppraisalReadyEmail />
+                <AppraisalReadyEmail 
+                    userName={args.userName}
+                    propertyAddress={args.propertyAddress}
+                    estimatedValue={args.estimatedValue}
+                    appraisalId={args.appraisalId}
+                    viewReportUrl={args.viewReportUrl}
+                    timestamp={timestamp}
+                />
             )
         );
 
