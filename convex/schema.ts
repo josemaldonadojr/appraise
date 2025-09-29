@@ -28,10 +28,10 @@ export default defineSchema({
     finishedBasementAreaSqft: v.optional(v.number()),
     propertyRole: v.union(v.literal("subject"), v.literal("comparable")),
     salesHistory: v.optional(v.array(v.object({
-      previousOwners: v.string(),
-      saleDate: v.string(),
-      salePrice: v.string(),
-      adjustedSalePrice: v.string(),
+      previousOwners: v.optional(v.string()),
+      saleDate: v.optional(v.string()),
+      salePrice: v.optional(v.string()),
+      adjustedSalePrice: v.optional(v.string()),
     }))),
   })
     .index("byAccountNumber", ["accountNumber"])

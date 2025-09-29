@@ -134,34 +134,34 @@ export type AccountResult = {
 };
 
 export type BatchPropertyResult = {
-    bath: number;
-    bedrooms: number;
-    subdivision: string;
-    fireplaces: number;
-    accountNumber: string;
-    parcelId: string;
-    schoolDistrict: string;
-    fireDistrict: string;
-    neighborhoodCode: string;
-    lotSize: string;
-    propertyType: string;
-    yearBuilt: number;
-    qualityCode: string;
-    architecturalType: string;
-    exteriorWalls: string;
-    totalAreaSqft: number;
-    baseAreaSqft: number;
-    parkingAreaSqft: number;
-    totalRooms: number;
-    basementAreaSqft: number;
-    finishedBasementAreaSqft: number;
-    salesHistory: {
-        previousOwners: string;
-        saleDate: string;
-        salePrice: string;
-        adjustedSalePrice: string;
+    bath?: number;
+    bedrooms?: number;
+    subdivision?: string;
+    fireplaces?: number;
+    accountNumber?: string;
+    parcelId?: string;
+    schoolDistrict?: string;
+    fireDistrict?: string;
+    neighborhoodCode?: string;
+    lotSize?: string;
+    propertyType?: string;
+    yearBuilt?: number;
+    qualityCode?: string;
+    architecturalType?: string;
+    exteriorWalls?: string;
+    totalAreaSqft?: number;
+    baseAreaSqft?: number;
+    parkingAreaSqft?: number;
+    totalRooms?: number;
+    basementAreaSqft?: number;
+    finishedBasementAreaSqft?: number;
+    salesHistory?: {
+        previousOwners?: string;
+        saleDate?: string;
+        salePrice?: string;
+        adjustedSalePrice?: string;
     }[];
-    propertyAddress: string;
+    propertyAddress?: string;
 };
 
 const schema = {
@@ -274,34 +274,34 @@ export const batchScrapePropertyDetailsAction = internalAction({
         }))
     },
     returns: v.array(v.object({
-        bath: v.number(),
-        bedrooms: v.number(),
-        subdivision: v.string(),
-        fireplaces: v.number(),
-        accountNumber: v.string(),
-        parcelId: v.string(),
-        schoolDistrict: v.string(),
-        fireDistrict: v.string(),
-        neighborhoodCode: v.string(),
-        lotSize: v.string(),
-        propertyType: v.string(),
-        yearBuilt: v.number(),
-        qualityCode: v.string(),
-        architecturalType: v.string(),
-        exteriorWalls: v.string(),
-        totalAreaSqft: v.number(),
-        baseAreaSqft: v.number(),
-        parkingAreaSqft: v.number(),
-        totalRooms: v.number(),
-        basementAreaSqft: v.number(),
-        finishedBasementAreaSqft: v.number(),
-        salesHistory: v.array(v.object({
-            previousOwners: v.string(),
-            saleDate: v.string(),
-            salePrice: v.string(),
-            adjustedSalePrice: v.string(),
-        })),
-        propertyAddress: v.string(),
+        bath: v.optional(v.number()),
+        bedrooms: v.optional(v.number()),
+        subdivision: v.optional(v.string()),
+        fireplaces: v.optional(v.number()),
+        accountNumber: v.optional(v.string()),
+        parcelId: v.optional(v.string()),
+        schoolDistrict: v.optional(v.string()),
+        fireDistrict: v.optional(v.string()),
+        neighborhoodCode: v.optional(v.string()),
+        lotSize: v.optional(v.string()),
+        propertyType: v.optional(v.string()),
+        yearBuilt: v.optional(v.number()),
+        qualityCode: v.optional(v.string()),
+        architecturalType: v.optional(v.string()),
+        exteriorWalls: v.optional(v.string()),
+        totalAreaSqft: v.optional(v.number()),
+        baseAreaSqft: v.optional(v.number()),
+        parkingAreaSqft: v.optional(v.number()),
+        totalRooms: v.optional(v.number()),
+        basementAreaSqft: v.optional(v.number()),
+        finishedBasementAreaSqft: v.optional(v.number()),
+        salesHistory: v.optional(v.array(v.object({
+            previousOwners: v.optional(v.string()),
+            saleDate: v.optional(v.string()),
+            salePrice: v.optional(v.string()),
+            adjustedSalePrice: v.optional(v.string()),
+        })),),
+        propertyAddress: v.optional(v.string()),
     })),
     handler: async (ctx, args) => {
         const results = await batchScrapePropertyDetails(args.accountResults);
