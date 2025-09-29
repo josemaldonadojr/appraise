@@ -148,6 +148,23 @@ const schema = {
         bedrooms: { type: "number" },
         subdivision: { type: "string" },
         fireplaces: { type: "number" },
+        accountNumber: { type: "string" },
+        parcelId: { type: "string" },
+        schoolDistrict: { type: "string" },
+        fireDistrict: { type: "string" },
+        neighborhoodCode: { type: "string" },
+        lotSize: { type: "string" },
+        propertyType: { type: "string" },
+        yearBuilt: { type: "number" },
+        qualityCode: { type: "string" },
+        architecturalType: { type: "string" },
+        exteriorWalls: { type: "string" },
+        totalAreaSqFt: { type: "number" },
+        baseAreaSqFt: { type: "number" },
+        parkingAreaSqFt: { type: "number" },
+        totalRooms: { type: "number" },
+        basementAreaSqFt: { type: "number" },
+        finishedBasementAreaSqFt: { type: "number" },
     },
     required: ["bath", "bedrooms", "fireplaces", "subdivision"]
 };
@@ -178,7 +195,7 @@ export async function batchScrapePropertyDetails(
                 formats: [
                     {
                         type: "json",
-                        prompt: "Extract the bath and bedrooms and subdivision and fireplaces from the page.",
+                        prompt: "Extract the bath and bedrooms and subdivision and fireplaces and Account Number and Parcel ID and School District and Fire District and Neighborhood Code and Lot Size and Property Type and Year Built and Quality Code and Architectural Type and Exterior Walls and Total Area SqFt and Base Area SqFt and Parking Area SqFt and Total Rooms and Basement Area SqFt and Finished Basement Area SqFt from the page.",
                         schema: schema
                     }
                 ]
@@ -188,10 +205,6 @@ export async function batchScrapePropertyDetails(
         if (batchScrapeResult.status === "completed") {
             console.log(batchScrapeResult.data)
         }
-
-        // if (batchScrapeStatus.status === "completed") {
-        //     console.log(batchScrapeJob.data)
-        // }
 
     } catch (error) {
         console.error('Batch scrape failed:', error);
