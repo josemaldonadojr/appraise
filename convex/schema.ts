@@ -26,6 +26,12 @@ export default defineSchema({
     basementAreaSqft: v.optional(v.number()),
     finishedBasementAreaSqft: v.optional(v.number()),
     propertyRole: v.union(v.literal("subject"), v.literal("comparable")),
+    salesHistory: v.optional(v.array(v.object({
+      previousOwners: v.string(),
+      saleDate: v.string(),
+      salePrice: v.string(),
+      adjustedSalePrice: v.string(),
+    }))),
   })
     .index("byAccountNumber", ["accountNumber"])
     .index("byAppraisalRequest", ["appraisalRequestId"]),

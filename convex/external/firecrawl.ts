@@ -155,6 +155,12 @@ export type BatchPropertyResult = {
     totalRooms: number;
     basementAreaSqft: number;
     finishedBasementAreaSqft: number;
+    salesHistory: {
+        previousOwners: string;
+        saleDate: string;
+        salePrice: string;
+        adjustedSalePrice: string;
+    }[];
 };
 
 const schema = {
@@ -181,6 +187,18 @@ const schema = {
         totalRooms: { type: "number" },
         basementAreaSqft: { type: "number" },
         finishedBasementAreaSqft: { type: "number" },
+        salesHistory: {
+            type: "array",
+            items: {
+                type: "object",
+                properties: {
+                    previousOwners: { type: "string" },
+                    saleDate: { type: "string" },
+                    salePrice: { type: "string" },
+                    adjustedSalePrice: { type: "string" },
+                },
+            }
+        },
     },
     required: ["bath", "bedrooms", "fireplaces", "subdivision"]
 };
@@ -211,7 +229,7 @@ export async function batchScrapePropertyDetails(
                 formats: [
                     {
                         type: "json",
-                        prompt: "Extract the bath and bedrooms and subdivision and fireplaces and Account Number and Parcel ID and School District and Fire District and Neighborhood Code and Lot Size and Property Type and Year Built and Quality Code and Architectural Type and Exterior Walls and Total Area SqFt and Base Area SqFt and Parking Area SqFt and Total Rooms and Basement Area SqFt and Finished Basement Area SqFt from the page.",
+                        prompt: "Extract the bath and bedrooms and subdivision and fireplaces and Account Number and Parcel ID and School District and Fire District and Neighborhood Code and Lot Size and Property Type and Year Built and Quality Code and Architectural Type and Exterior Walls and Total Area SqFt and Base Area SqFt and Parking Area SqFt and Total Rooms and Basement Area SqFt and Finished Basement Area SqFt and Sales History from the page.",
                         schema: schema
                     }
                 ]
@@ -275,6 +293,12 @@ export const batchScrapePropertyDetailsAction = internalAction({
         totalRooms: v.number(),
         basementAreaSqft: v.number(),
         finishedBasementAreaSqft: v.number(),
+        salesHistory: v.array(v.object({
+            previousOwners: v.string(),
+            saleDate: v.string(),
+            salePrice: v.string(),
+            adjustedSalePrice: v.string(),
+        })),
     })),
     handler: async (ctx, args) => {
         const results = await batchScrapePropertyDetails(args.accountResults);

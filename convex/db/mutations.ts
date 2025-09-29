@@ -80,6 +80,12 @@ export const insertProperty = internalMutation({
             basementAreaSqft: v.number(),
             finishedBasementAreaSqft: v.number(),
             propertyRole: v.union(v.literal("subject"), v.literal("comparable")),
+            salesHistory: v.optional(v.array(v.object({
+                previousOwners: v.string(),
+                saleDate: v.string(),
+                salePrice: v.string(),
+                adjustedSalePrice: v.string(),
+            }))),
         })
     },
     handler: async (ctx, args) => {
