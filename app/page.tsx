@@ -9,11 +9,13 @@ import { api } from "@/convex/_generated/api"
 import { useQuery } from "convex/react"
 import type { Id } from "@/convex/_generated/dataModel"
 import { MapboxSearch } from "@/components/mapbox-search"
+import { AppraisalProgressModal } from "@/components/progress-modal"
 
 export default function HomePage() {
   const router = useRouter()
   const startRequest = useMutation(api.appraisals.api.startRequest)
   const [currentRequestId, setCurrentRequestId] = useState<Id<"appraisal_requests"> | null>(null)
+  const [currentAddress, setCurrentAddress] = useState<string>("")
   const statusResult = useQuery(
     api.appraisals.api.getRequestStatus,
     currentRequestId ? { appraisalRequestId: currentRequestId } : "skip"
@@ -28,13 +30,17 @@ export default function HomePage() {
     if (statusResult?.status === "done" && appraisalJson) {
       router.push(`/results?requestId=${currentRequestId}`)
     }
-  }, [currentRequestId, statusResult?.status, appraisalJson, router])
+    if (statusResult?.status === "failed") {
+      console.error("Appraisal failed:", statusResult.errorDetails?.message)
+    }
+  }, [currentRequestId, statusResult?.status, appraisalJson, router, statusResult?.errorDetails])
 
   const handleAddressSelect = async (address: string) => {
     const inputAddress = address.trim()
     if (!inputAddress) return
 
     try {
+      setCurrentAddress(inputAddress)
       const { appraisalRequestId } = await startRequest({ address: inputAddress })
       setCurrentRequestId(appraisalRequestId)
     } catch (err) {
@@ -42,10 +48,28 @@ export default function HomePage() {
     }
   }
 
+  const isModalOpen = Boolean(currentRequestId) && 
+    statusResult && 
+    statusResult.status !== "done" && 
+    statusResult.status !== "failed"
+
+  const handleModalClose = () => {
+    if (statusResult?.status === "failed" || statusResult?.status === "done") {
+      setCurrentRequestId(null)
+      setCurrentAddress("")
+    }
+  }
+
 
 
   return (
     <div className="min-h-screen bg-background">
+      <AppraisalProgressModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        address={currentAddress}
+        status={statusResult?.status}
+      />
       <section className="relative px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36">
         <div className="mx-auto max-w-4xl text-center">
           <h1 className="font-serif text-4xl font-light tracking-tight text-foreground sm:text-5xl lg:text-6xl text-balance leading-tight sm:leading-tight lg:leading-tight">
