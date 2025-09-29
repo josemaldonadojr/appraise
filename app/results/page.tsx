@@ -11,6 +11,9 @@ import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type Comp = Record<string, any>;
+
 // Mock data based on the provided JSON
 const mockAppraisalData = {
   subject: {
@@ -54,11 +57,6 @@ function ResultsContent() {
   const searchParams = useSearchParams()
   const address = searchParams.get("address") || mockAppraisalData.subject.address
   const requestId = searchParams.get("requestId") as Id<"appraisal_requests"> | null
-
-  const status = useQuery(
-    api.appraisals.api.getRequestStatus,
-    requestId ? { appraisalRequestId: requestId } : "skip"
-  )
 
   const appraisalJson = useQuery(
     api.appraisals.api.getAppraisalJson,
@@ -142,7 +140,7 @@ function ResultsContent() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {data.comps.map((comp: any, index: number) => (
+                  {data.comps.map((comp: Comp, index: number) => (
                     <div key={index} className="border rounded-lg p-6">
                       <div className="flex items-center justify-between mb-4">
                         <h4 className="font-medium">{comp.id}</h4>

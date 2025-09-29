@@ -14,10 +14,8 @@ import {
   Search,
   X,
   ChevronDown,
-  Share2,
-  Mail,
 } from "lucide-react"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
@@ -31,7 +29,6 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [showSharePanel, setShowSharePanel] = useState(false)
-  const [shareEmail, setShareEmail] = useState("")
   const [loadingStateIndex, setLoadingStateIndex] = useState(0)
   const router = useRouter()
   const startRequest = useMutation(api.appraisals.api.startRequest)
@@ -137,12 +134,6 @@ export default function HomePage() {
     if (e.key === "Enter") {
       handleSearch()
     }
-  }
-
-  const handleShareReport = () => {
-    // For now, just close the panel
-    setShowSharePanel(false)
-    setShareEmail("")
   }
 
   return (
