@@ -43,23 +43,18 @@ export default function HomePage() {
   )
 
   const statusCopy: Record<string, string> = useMemo(() => ({
-    REQUEST_INITIATED: "Starting your appraisal request...",
-    GEOCODING_IN_PROGRESS: "Confirming the exact property location...",
-    GEOCODED: "Location verified. Preparing nearby sales...",
-    SEARCHING_COMPARABLES: "Finding comparable sales near your property...",
-    COMPARABLES_SAVED: "Comparables found. Verifying county account numbers...",
-    ACCOUNT_LOOKUP_IN_PROGRESS: "Looking up county account numbers...",
-    ACCOUNT_NUMBER_SAVED: "Accounts verified. Pulling detailed property data...",
-    PROPERTY_SCRAPE_IN_PROGRESS: "Collecting detailed property records...",
-    DATA_ENRICHED: "Analyzing market trends and adjustments...",
-    LLM_APPRAISAL_IN_PROGRESS: "Generating your appraisal report...",
-    APPRAISAL_COMPLETE: "Appraisal complete!",
-    FAILED: "We hit a snag preparing your report.",
+    running: "Initializing your appraisal...",
+    "address-start": "Verifying the property address...",
+    "lookup-start": "Finding comparable properties nearby...",
+    "scrape-start": "Analyzing property details and market data...",
+    "appraise-start": "Generating your appraisal report...",
+    done: "Appraisal complete!",
+    failed: "We encountered an issue while preparing your report.",
   }), [])
 
   useEffect(() => {
     if (!currentRequestId) return
-    if (statusResult?.status === "APPRAISAL_COMPLETE" && appraisalJson) {
+    if (statusResult?.status === "done" && appraisalJson) {
       router.push(`/results?requestId=${currentRequestId}&address=${encodeURIComponent(originalAddress)}`)
     }
   }, [currentRequestId, statusResult?.status, appraisalJson, router, originalAddress])
@@ -72,10 +67,10 @@ export default function HomePage() {
   }, [statusResult?.status, isLoading, currentRequestId])
 
   const loadingStates = [
-    "Locating your property...",
-    "Finding similar properties...",
-    "Analyzing market data...",
-    "Generating your appraisal...",
+    "Starting your appraisal...",
+    "Verifying property details...",
+    "Finding comparable sales...",
+    "Generating your report...",
   ]
 
   // Use friendly status copy when we have real status, fall back to loading states
@@ -188,10 +183,10 @@ export default function HomePage() {
                     By continuing, you agree to our Terms of Service and Privacy Policy
                   </p>
                 </div>
-                </div>
               </div>
             </div>
           </div>
+        </div>
       )}
 
       {/* Hero Section */}
@@ -209,8 +204,8 @@ export default function HomePage() {
             <div className="w-full max-w-md">
               <div
                 className={`relative bg-background border rounded-2xl shadow-sm transition-all duration-300 ${isSearchFocused || showSharePanel
-                    ? "border-primary shadow-lg scale-105"
-                    : "border-border hover:shadow-md"
+                  ? "border-primary shadow-lg scale-105"
+                  : "border-border hover:shadow-md"
                   } ${showSharePanel ? "rounded-b-xl" : ""}`}
               >
                 {/* Search Input */}

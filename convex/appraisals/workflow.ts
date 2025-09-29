@@ -75,6 +75,11 @@ export const appraisalWorkflow = workflow.define({
                 return propertyData;
             });
 
+            await step.runMutation(internal.db.mutations.updateStatus, {
+                requestId: appraisalRequestId,
+                status: "appraise-start",
+            });
+
             const appraisalResult = await step.runAction(internal.external.appraise.appraise, {
                 properties: propertiesForAppraisal,
                 cfg: {
