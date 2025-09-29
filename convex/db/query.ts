@@ -33,3 +33,13 @@ export const getSalesHistoryByPropertyId = internalQuery({
         return returnSalesHistory;
     },
 });
+
+export const getPropertiesByAppraisalRequest = internalQuery({
+    args: {
+        appraisalRequestId: v.id("appraisal_requests"),
+    },
+    returns: v.array(v.any()),
+    handler: async (ctx, args) => {
+        return await ctx.db.query("properties").withIndex("byAppraisalRequest", (q) => q.eq("appraisalRequestId", args.appraisalRequestId)).collect();
+    },
+});

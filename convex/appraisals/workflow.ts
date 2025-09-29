@@ -55,43 +55,49 @@ export const appraisalWorkflow = workflow.define({
                 step.runMutation(internal.db.mutations.insertProperty, {
                     property: {
                         ...propertyDetail,
-                        propertyRole: isSubject ? "subject" : "comparable"
+                        propertyRole: isSubject ? "subject" : "comparable",
+                        appraisalRequestId: appraisalRequestId,
                     },
                 })
             });
 
             await Promise.all(insertPropertyPromises);
 
+
+
+            const properties = await step.runQuery(internal.db.query.getPropertiesByAppraisalRequest, {
+                appraisalRequestId: appraisalRequestId,
+            });
+
+
+            const propertiesForAppraisal = properties.map((property) => {
+                const { _id, _creationTime, appraisalRequestId, ...propertyData } = property;
+                return propertyData;
+            });
+
+            const appraisalResult = await step.runAction(internal.external.appraise.appraise, {
+                properties: propertiesForAppraisal,
+                cfg: {
+                    glaRateStart: 90,
+                    bedroomStart: 4000,
+                    bathFullStart: 5000,
+                    bathHalfStart: 2500,
+                    basementFinishedStart: 35,
+                    garageRateStart: 20,
+                    lotMethod: "lump_sum",
+                    timeAdjMonthlyStart: 0.004,
+                },
+            });
+
+            await step.runMutation(internal.external.appraise.saveAppraisalJson, {
+                appraisalRequestId: appraisalRequestId,
+                appraisalJson: appraisalResult,
+            });
+
             await step.runMutation(internal.db.mutations.updateStatus, {
                 requestId: appraisalRequestId,
                 status: "done",
             });
-
-            // const appraisalResult = await step.runAction(internal.external.appraise.appraise, {
-            //     subject: subjectData,
-            //     comps: compsReadyForAppraisal,
-            //     cfg: {
-            //         glaRateStart: 90,
-            //         bedroomStart: 4000,
-            //         bathFullStart: 5000,
-            //         bathHalfStart: 2500,
-            //         basementFinishedStart: 35,
-            //         garageRateStart: 20,
-            //         lotMethod: "lump_sum",
-            //         timeAdjMonthlyStart: 0.004,
-            //     },
-            // });
-
-            // await step.runMutation(internal.external.appraise.saveAppraisalJson, {
-            //     appraisalRequestId: appraisalRequestId,
-            //     appraisalJson: appraisalResult,
-            // });
-
-            // // Mark workflow complete after saving the appraisal JSON
-            // await step.runMutation(internal.db.mutations.updateStatus, {
-            //     requestId: appraisalRequestId,
-            //     status: AppraisalStatus.APPRAISAL_COMPLETE,
-            // });
         } catch (error) {
             console.error("Appraisal workflow failed:", error);
 

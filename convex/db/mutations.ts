@@ -58,6 +58,8 @@ export const markFailed = internalMutation({
 export const insertProperty = internalMutation({
     args: {
         property: v.object({
+            appraisalRequestId: v.id("appraisal_requests"),
+            propertyAddress: v.string(),
             bath: v.number(),
             bedrooms: v.number(),
             subdivision: v.string(),
