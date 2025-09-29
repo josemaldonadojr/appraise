@@ -79,6 +79,7 @@ export const insertProperty = internalMutation({
             totalRooms: v.number(),
             basementAreaSqft: v.number(),
             finishedBasementAreaSqft: v.number(),
+            propertyRole: v.union(v.literal("subject"), v.literal("comparable")),
         })
     },
     handler: async (ctx, args) => {

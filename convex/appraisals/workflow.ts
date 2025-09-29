@@ -17,6 +17,8 @@ export const appraisalWorkflow = workflow.define({
                 status: "address-start",
             });
 
+            const mainAccount = await step.runAction(internal.external.actions.lookupSingleAccount, { address });
+
             const foundAddresses = await step.runAction(internal.external.firecrawl.searchAddresses, { address });
 
             if (foundAddresses.length === 0) {
@@ -45,14 +47,18 @@ export const appraisalWorkflow = workflow.define({
             });
 
             const propertyDetails = await step.runAction(internal.external.firecrawl.batchScrapePropertyDetailsAction, {
-                accountResults: accountResults
+                accountResults: [mainAccount, ...accountResults]
             });
 
-            const insertPropertyPromises = propertyDetails.map(propertyDetail =>
+            const insertPropertyPromises = propertyDetails.map((propertyDetail, index) => {
+                const isSubject = index === 0;
                 step.runMutation(internal.db.mutations.insertProperty, {
-                    property: propertyDetail,
+                    property: {
+                        ...propertyDetail,
+                        propertyRole: isSubject ? "subject" : "comparable"
+                    },
                 })
-            );
+            });
 
             await Promise.all(insertPropertyPromises);
 
