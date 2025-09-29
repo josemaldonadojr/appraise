@@ -41,4 +41,16 @@ export default defineSchema({
     errorDetails: v.optional(v.object({ message: v.string() })),
   }).index("byStatus", ["status"]),
 
+  sales_history: defineTable({
+    propertyId: v.id("properties"),
+    previousOwner: v.union(v.string(), v.null()),
+    saleDate: v.union(v.string(), v.null()),
+    salePriceUsd: v.union(v.number(), v.null()),
+    adjustedSalePriceUsd: v.union(v.number(), v.null()),
+    unitPriceSqftUsd: v.union(v.number(), v.null()),
+  }).index("byProperty", ["propertyId"]),
+  appraisal_json: defineTable({
+    appraisalRequestId: v.id("appraisal_requests"),
+    appraisalJson: v.optional(v.any()),
+  }).index("byAppraisalRequest", ["appraisalRequestId"]),
 });
