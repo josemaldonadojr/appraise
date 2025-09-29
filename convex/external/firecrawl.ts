@@ -161,6 +161,7 @@ export type BatchPropertyResult = {
         salePrice: string;
         adjustedSalePrice: string;
     }[];
+    propertyAddress: string;
 };
 
 const schema = {
@@ -187,6 +188,7 @@ const schema = {
         totalRooms: { type: "number" },
         basementAreaSqft: { type: "number" },
         finishedBasementAreaSqft: { type: "number" },
+        propertyAddress: { type: "string" },
         salesHistory: {
             type: "array",
             items: {
@@ -229,7 +231,7 @@ export async function batchScrapePropertyDetails(
                 formats: [
                     {
                         type: "json",
-                        prompt: "Extract the bath and bedrooms and subdivision and fireplaces and Account Number and Parcel ID and School District and Fire District and Neighborhood Code and Lot Size and Property Type and Year Built and Quality Code and Architectural Type and Exterior Walls and Total Area SqFt and Base Area SqFt and Parking Area SqFt and Total Rooms and Basement Area SqFt and Finished Basement Area SqFt and Sales History from the page.",
+                        prompt: "Extract the property address and bath and bedrooms and subdivision and fireplaces and Account Number and Parcel ID and School District and Fire District and Neighborhood Code and Lot Size and Property Type and Year Built and Quality Code and Architectural Type and Exterior Walls and Total Area SqFt and Base Area SqFt and Parking Area SqFt and Total Rooms and Basement Area SqFt and Finished Basement Area SqFt and Sales History from the page.",
                         schema: schema
                     }
                 ]
@@ -299,6 +301,7 @@ export const batchScrapePropertyDetailsAction = internalAction({
             salePrice: v.string(),
             adjustedSalePrice: v.string(),
         })),
+        propertyAddress: v.string(),
     })),
     handler: async (ctx, args) => {
         const results = await batchScrapePropertyDetails(args.accountResults);

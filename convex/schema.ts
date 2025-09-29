@@ -4,6 +4,7 @@ import { v } from "convex/values";
 export default defineSchema({
   properties: defineTable({
     appraisalRequestId: v.optional(v.id("appraisal_requests")),
+    propertyAddress: v.optional(v.string()),
     bath: v.optional(v.number()),
     bedrooms: v.optional(v.number()),
     subdivision: v.optional(v.string()),
