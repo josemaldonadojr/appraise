@@ -12,31 +12,6 @@ export const getSubjectPropertyByRequestId = internalQuery({
     },
 });
 
-export const getComparablesByRequestId = internalQuery({
-    args: {
-        appraisalRequestId: v.id("appraisal_requests"),
-    },
-    returns: v.array(v.any()),
-    handler: async (ctx, args) => {
-        // Get comparables for this appraisal request
-        const comparables = await ctx.db
-            .query("comparables")
-            .withIndex("byAppraisalRequest", (q) => q.eq("appraisalRequestId", args.appraisalRequestId))
-            .collect();
-
-        // Get properties for each comparable
-        const properties = [];
-        for (const comparable of comparables) {
-            const property = await ctx.db.get(comparable.comparablePropertyId);
-            if (property) {
-                properties.push(property);
-            }
-        }
-
-        return properties;
-    },
-});
-
 export const getSalesHistoryByPropertyId = internalQuery({
     args: {
         propertyId: v.id("properties"),
