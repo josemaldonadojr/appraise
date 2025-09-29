@@ -51,7 +51,7 @@ export const appraisalWorkflow = workflow.define({
             });
 
             const insertPropertyPromises = propertyDetails.map((propertyDetail, index) => {
-                const isSubject = index === 0;
+                const isSubject = propertyDetail.accountNumber === mainAccount.accountNumber;
                 step.runMutation(internal.db.mutations.insertProperty, {
                     property: {
                         ...propertyDetail,
