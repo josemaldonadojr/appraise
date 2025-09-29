@@ -29,13 +29,6 @@ export default defineSchema({
     .index("byAccountNumber", ["accountNumber"])
     .index("byAppraisalRequest", ["appraisalRequestId"]),
 
-  comparables: defineTable({
-    comparablePropertyId: v.id("properties"),
-    appraisalRequestId: v.id("appraisal_requests"),
-  })
-    .index("byComparableProperty", ["comparablePropertyId"])
-    .index("byAppraisalRequest", ["appraisalRequestId"]),
-
 
   appraisal_requests: defineTable({
     address: v.string(),
