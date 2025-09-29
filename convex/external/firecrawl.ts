@@ -25,7 +25,7 @@ export type AddressSearchOptions = {
 const DEFAULT_CONFIG: Omit<FirecrawlConfig, 'apiKey'> = {
     baseUrl: 'https://lookups.sccmo.org/assessor/search',
     cacheMaxAge: 172800000, // 2 days in milliseconds
-    resultsPerPage: 2,
+    resultsPerPage: 4,
 };
 
 // Zod schema for address search results
