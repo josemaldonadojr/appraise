@@ -1,6 +1,5 @@
 import { v } from "convex/values";
 import { internalMutation } from "../_generated/server";
-import { AppraisalStatus } from "../appraisals/workflow";
 
 export const createRequest = internalMutation({
     args: {
@@ -10,7 +9,7 @@ export const createRequest = internalMutation({
     handler: async (ctx, args) => {
         return await ctx.db.insert("appraisal_requests", {
             address: args.address,
-            status: AppraisalStatus.REQUEST_INITIATED,
+            status: "running",
         });
     },
 });
@@ -41,7 +40,7 @@ export const finalizeAppraisal = internalMutation({
         finalResult: v.number(),
     },
     handler: async (ctx, args) => {
-        await ctx.db.patch(args.requestId, { finalResult: args.finalResult, status: AppraisalStatus.LLM_APPRAISAL_IN_PROGRESS });
+        await ctx.db.patch(args.requestId, { finalResult: args.finalResult, status: "done" });
     },
 });
 
@@ -51,7 +50,7 @@ export const markFailed = internalMutation({
         errorDetails: v.object({ message: v.string() }),
     },
     handler: async (ctx, args) => {
-        await ctx.db.patch(args.requestId, { errorDetails: { message: args.errorDetails.message }, status: AppraisalStatus.FAILED });
+        await ctx.db.patch(args.requestId, { errorDetails: { message: args.errorDetails.message }, status: "failed" });
     },
 });
 

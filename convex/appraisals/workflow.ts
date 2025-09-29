@@ -3,21 +3,6 @@ import { internal } from "../_generated/api";
 import { workflow } from "../workflows";
 import { ConvexError } from "convex/values";
 
-export const AppraisalStatus = {
-    REQUEST_INITIATED: "REQUEST_INITIATED",
-    GEOCODING_IN_PROGRESS: "GEOCODING_IN_PROGRESS",
-    GEOCODED: "GEOCODED",
-    SEARCHING_COMPARABLES: "SEARCHING_COMPARABLES",
-    COMPARABLES_SAVED: "COMPARABLES_SAVED",
-    ACCOUNT_LOOKUP_IN_PROGRESS: "ACCOUNT_LOOKUP_IN_PROGRESS",
-    ACCOUNT_NUMBER_SAVED: "ACCOUNT_NUMBER_SAVED",
-    PROPERTY_SCRAPE_IN_PROGRESS: "PROPERTY_SCRAPE_IN_PROGRESS",
-    DATA_ENRICHED: "DATA_ENRICHED",
-    LLM_APPRAISAL_IN_PROGRESS: "LLM_APPRAISAL_IN_PROGRESS",
-    APPRAISAL_COMPLETE: "APPRAISAL_COMPLETE",
-    FAILED: "FAILED",
-} as const;
-
 export const appraisalWorkflow = workflow.define({
     args: {
         appraisalRequestId: v.id("appraisal_requests"),
@@ -29,7 +14,7 @@ export const appraisalWorkflow = workflow.define({
         try {
             await step.runMutation(internal.db.mutations.updateStatus, {
                 requestId: appraisalRequestId,
-                status: AppraisalStatus.GEOCODING_IN_PROGRESS,
+                status: "address-start",
             });
 
             const foundAddresses = await step.runAction(internal.external.firecrawl.searchAddresses, { address });
@@ -41,6 +26,11 @@ export const appraisalWorkflow = workflow.define({
                 });
             }
 
+            await step.runMutation(internal.db.mutations.updateStatus, {
+                requestId: appraisalRequestId,
+                status: "lookup-start",
+            });
+
             const accountLookupPromises = foundAddresses.map(addressResult =>
                 step.runAction(internal.external.actions.lookupSingleAccount, {
                     address: addressResult.address,
@@ -49,6 +39,10 @@ export const appraisalWorkflow = workflow.define({
 
             const accountResults = await Promise.all(accountLookupPromises);
 
+            await step.runMutation(internal.db.mutations.updateStatus, {
+                requestId: appraisalRequestId,
+                status: "scrape-start",
+            });
 
             const propertyDetails = await step.runAction(internal.external.firecrawl.batchScrapePropertyDetailsAction, {
                 accountResults: accountResults
@@ -61,6 +55,11 @@ export const appraisalWorkflow = workflow.define({
             );
 
             await Promise.all(insertPropertyPromises);
+
+            await step.runMutation(internal.db.mutations.updateStatus, {
+                requestId: appraisalRequestId,
+                status: "done",
+            });
 
             // const appraisalResult = await step.runAction(internal.external.appraise.appraise, {
             //     subject: subjectData,
