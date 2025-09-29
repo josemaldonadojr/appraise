@@ -25,7 +25,7 @@ export type AddressSearchOptions = {
 const DEFAULT_CONFIG: Omit<FirecrawlConfig, 'apiKey'> = {
     baseUrl: 'https://lookups.sccmo.org/assessor/search',
     cacheMaxAge: 172800000, // 2 days in milliseconds
-    resultsPerPage: 1,
+    resultsPerPage: 2,
 };
 
 // Zod schema for address search results
@@ -134,11 +134,27 @@ export type AccountResult = {
 };
 
 export type BatchPropertyResult = {
-    address: string;
-    accountNumber: string | null;
-    propertyData: any;
-    success: boolean;
-    error?: string;
+    bath: number;
+    bedrooms: number;
+    subdivision: string;
+    fireplaces: number;
+    accountNumber: string;
+    parcelId: string;
+    schoolDistrict: string;
+    fireDistrict: string;
+    neighborhoodCode: string;
+    lotSize: string;
+    propertyType: string;
+    yearBuilt: number;
+    qualityCode: string;
+    architecturalType: string;
+    exteriorWalls: string;
+    totalAreaSqft: number;
+    baseAreaSqft: number;
+    parkingAreaSqft: number;
+    totalRooms: number;
+    basementAreaSqft: number;
+    finishedBasementAreaSqft: number;
 };
 
 const schema = {
@@ -159,19 +175,19 @@ const schema = {
         qualityCode: { type: "string" },
         architecturalType: { type: "string" },
         exteriorWalls: { type: "string" },
-        totalAreaSqFt: { type: "number" },
-        baseAreaSqFt: { type: "number" },
-        parkingAreaSqFt: { type: "number" },
+        totalAreaSqft: { type: "number" },
+        baseAreaSqft: { type: "number" },
+        parkingAreaSqft: { type: "number" },
         totalRooms: { type: "number" },
-        basementAreaSqFt: { type: "number" },
-        finishedBasementAreaSqFt: { type: "number" },
+        basementAreaSqft: { type: "number" },
+        finishedBasementAreaSqft: { type: "number" },
     },
     required: ["bath", "bedrooms", "fireplaces", "subdivision"]
 };
 
 export async function batchScrapePropertyDetails(
     accountResults: AccountResult[]
-): Promise<void> {
+): Promise<BatchPropertyResult[]> {
     const config: FirecrawlConfig = {
         ...DEFAULT_CONFIG,
         apiKey: process.env.FIRECRAWL_API_KEY || ''
@@ -186,7 +202,7 @@ export async function batchScrapePropertyDetails(
 
     if (detailUrls.length === 0) {
         console.log('No valid account numbers found for batch scraping');
-        return;
+        return [];
     }
 
     try {
@@ -203,12 +219,16 @@ export async function batchScrapePropertyDetails(
         });
 
         if (batchScrapeResult.status === "completed") {
-            console.log(batchScrapeResult.data)
+
+            const results = batchScrapeResult.data.map(d => d.json) as BatchPropertyResult[];
+            return results;
         }
 
     } catch (error) {
         console.error('Batch scrape failed:', error);
+        return [];
     }
+    return [];
 }
 
 export const searchAddresses = internalAction({
@@ -233,8 +253,31 @@ export const batchScrapePropertyDetailsAction = internalAction({
             accountNumber: v.union(v.string(), v.null())
         }))
     },
-    returns: v.null(),
+    returns: v.array(v.object({
+        bath: v.number(),
+        bedrooms: v.number(),
+        subdivision: v.string(),
+        fireplaces: v.number(),
+        accountNumber: v.string(),
+        parcelId: v.string(),
+        schoolDistrict: v.string(),
+        fireDistrict: v.string(),
+        neighborhoodCode: v.string(),
+        lotSize: v.string(),
+        propertyType: v.string(),
+        yearBuilt: v.number(),
+        qualityCode: v.string(),
+        architecturalType: v.string(),
+        exteriorWalls: v.string(),
+        totalAreaSqft: v.number(),
+        baseAreaSqft: v.number(),
+        parkingAreaSqft: v.number(),
+        totalRooms: v.number(),
+        basementAreaSqft: v.number(),
+        finishedBasementAreaSqft: v.number(),
+    })),
     handler: async (ctx, args) => {
-        await batchScrapePropertyDetails(args.accountResults);
+        const results = await batchScrapePropertyDetails(args.accountResults);
+        return results;
     },
 });

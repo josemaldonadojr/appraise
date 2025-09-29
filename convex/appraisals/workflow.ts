@@ -50,9 +50,17 @@ export const appraisalWorkflow = workflow.define({
             const accountResults = await Promise.all(accountLookupPromises);
 
 
-            await step.runAction(internal.external.firecrawl.batchScrapePropertyDetailsAction, {
+            const propertyDetails = await step.runAction(internal.external.firecrawl.batchScrapePropertyDetailsAction, {
                 accountResults: accountResults
             });
+
+            const insertPropertyPromises = propertyDetails.map(propertyDetail =>
+                step.runMutation(internal.db.mutations.insertProperty, {
+                    property: propertyDetail,
+                })
+            );
+
+            await Promise.all(insertPropertyPromises);
 
             // const appraisalResult = await step.runAction(internal.external.appraise.appraise, {
             //     subject: subjectData,
