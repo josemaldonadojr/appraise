@@ -203,7 +203,7 @@ export const appraise = internalAction({
         });
 
         const { object } = await generateObject({
-            model: openai('gpt-5'),
+            model: openai('gpt-4o-mini-2024-07-18'),
             schema: AppraiserOutputSchema,
             messages: [
                 {
