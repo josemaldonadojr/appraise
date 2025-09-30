@@ -3,6 +3,8 @@ import { v, Infer } from "convex/values";
 import { generateObject } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
+import { ActionCache } from "@convex-dev/action-cache";
+import { components, internal } from "../_generated/api";
 
 const PropertySchema = v.object({
     propertyAddress: v.optional(v.string()),
@@ -50,6 +52,8 @@ const RatesConfigSchema = v.object({
 });
 type RatesConfig = Infer<typeof RatesConfigSchema>;
 
+// Cache configuration for appraisal results
+const APPRAISAL_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days - appraisal results are stable for similar properties
 
 function safeStringify(obj: unknown, maxChars = 5000): string {
     const json = JSON.stringify(obj, null, 2);
@@ -214,6 +218,117 @@ export const appraise = internalAction({
         });
 
         return object;
+    },
+});
+
+// Pure function for appraisal (cacheable)
+export const appraisePure = internalAction({
+    args: {
+        properties: v.array(PropertySchema),
+        cfg: RatesConfigSchema,
+    },
+    returns: v.any(),
+    handler: async (ctx, args) => {
+        console.log(`Running appraisal for ${args.properties.length} properties (pure function)`);
+        const prompt = appraiserPrompt(args.properties, args.cfg);
+
+        const AppraiserOutputSchema = z.object({
+            subject: z.object({
+                address: z.string().describe("The street address of the subject property, typically from the 'propertyAddress' input field."),
+                summary: z.string()
+            }),
+            assumptions: z.object({
+                gla_rate_per_sqft: z.number(),
+                bath_full_rate: z.number(),
+                bath_half_rate: z.number(),
+                bedroom_rate: z.number(),
+                basement_finished_rate: z.number(),
+                garage_rate_per_sqft: z.number(),
+                lot_adjustment_method: z.enum(["lump_sum", "per_sqft", "none"]),
+                time_adjustment_monthly_rate: z.union([z.number(), z.null()]),
+                location_adjustments_note: z.string()
+            }),
+            comps: z.array(z.object({
+                id: z.union([z.string(), z.null()]),
+                sale_date: z.string(),
+                unadjusted_price: z.number(),
+                price_per_sqft: z.union([z.number(), z.null()]),
+                differences: z.object({
+                    gla_sqft: z.union([z.number(), z.null()]),
+                    beds_diff: z.union([z.number(), z.null()]),
+                    baths_full_diff: z.union([z.number(), z.null()]),
+                    baths_half_diff: z.union([z.number(), z.null()]),
+                    basement_finished_sqft_diff: z.union([z.number(), z.null()]),
+                    garage_sqft_diff: z.union([z.number(), z.null()]),
+                    lot_diff_descriptor: z.union([z.string(), z.null()]),
+                    quality_diff_descriptor: z.union([z.string(), z.null()]),
+                    location_diff_descriptor: z.union([z.string(), z.null()]),
+                    age_diff_years: z.union([z.number(), z.null()])
+                }),
+                adjustments: z.array(z.object({
+                    feature: z.string(),
+                    amount: z.number(),
+                    rationale: z.string()
+                })),
+                time_adjustment: z.number(),
+                net_adjustment: z.number(),
+                adjusted_price: z.number(),
+                weight: z.number()
+            })),
+            reconciliation: z.object({
+                indicated_range: z.object({
+                    low: z.number(),
+                    high: z.number()
+                }),
+                central_tendency: z.object({
+                    mean: z.number(),
+                    median: z.number()
+                }),
+                weighted_value: z.number(),
+                final_value_opinion: z.number(),
+                reasoning: z.string()
+            }),
+            risks: z.array(z.string())
+        });
+
+        const { object } = await generateObject({
+            model: openai('gpt-4o-mini-2024-07-18'),
+            schema: AppraiserOutputSchema,
+            messages: [
+                {
+                    role: 'system',
+                    content: prompt,
+                },
+            ]
+        });
+
+        return object;
+    },
+});
+
+// Cache instance for appraisal results
+const appraisalCache = new ActionCache(components.actionCache, {
+    action: internal.external.appraise.appraisePure,
+    name: "appraisal",
+    ttl: APPRAISAL_CACHE_TTL,
+});
+
+// Cached version of the appraisal function
+export const appraiseCached = internalAction({
+    args: {
+        properties: v.array(PropertySchema),
+        cfg: RatesConfigSchema,
+        force: v.optional(v.boolean())
+    },
+    returns: v.any(),
+    handler: async (ctx, args): Promise<any> => {
+        const result: any = await appraisalCache.fetch(
+            ctx,
+            { properties: args.properties, cfg: args.cfg },
+            { force: args.force }
+        );
+
+        return result;
     },
 });
 

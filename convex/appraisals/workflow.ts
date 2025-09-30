@@ -80,7 +80,7 @@ export const appraisalWorkflow = workflow.define({
                 status: "appraise-start",
             });
 
-            const appraisalResult = await step.runAction(internal.external.appraise.appraise, {
+            const appraisalResult = await step.runAction(internal.external.appraise.appraiseCached, {
                 properties: propertiesForAppraisal,
                 cfg: {
                     glaRateStart: 90,
