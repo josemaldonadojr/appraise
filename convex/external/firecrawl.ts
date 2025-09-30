@@ -33,6 +33,9 @@ const DEFAULT_CONFIG: Omit<FirecrawlConfig, 'apiKey'> = {
 // Action Cache configuration for property details
 const PROPERTY_DETAILS_CACHE_TTL = 30 * 24 * 60 * 60 * 1000; // 30 days - property details don't change often
 
+// Action Cache configuration for address search
+const ADDRESS_SEARCH_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days - address search results are relatively stable
+
 // Zod schema for address search results
 const AddressSearchSchema = z.object({
     addresses: z.array(z.string())
@@ -256,7 +259,8 @@ export async function batchScrapePropertyDetails(
     return [];
 }
 
-export const searchAddresses = internalAction({
+// Pure function for address search (cacheable)
+export const searchAddressesPure = internalAction({
     args: {
         address: v.string(),
         includeDetails: v.optional(v.boolean())
@@ -265,9 +269,38 @@ export const searchAddresses = internalAction({
         address: v.string(),
     })),
     handler: async (ctx, args) => {
+        console.log(`Searching addresses for: ${args.address} (pure function)`);
         return await searchAddressesWithFirecrawl(args.address, {
             includeDetails: args.includeDetails
         });
+    },
+});
+
+// Cache instance for address search results
+const addressSearchCache = new ActionCache(components.actionCache, {
+    action: internal.external.firecrawl.searchAddressesPure,
+    name: "addressSearch",
+    ttl: ADDRESS_SEARCH_CACHE_TTL,
+});
+
+// Cached version of the address search function
+export const searchAddresses = internalAction({
+    args: {
+        address: v.string(),
+        includeDetails: v.optional(v.boolean()),
+        force: v.optional(v.boolean())
+    },
+    returns: v.array(v.object({
+        address: v.string(),
+    })),
+    handler: async (ctx, args): Promise<AddressSearchResult[]> => {
+        const result: AddressSearchResult[] = await addressSearchCache.fetch(
+            ctx,
+            { address: args.address, includeDetails: args.includeDetails },
+            { force: args.force }
+        );
+
+        return result;
     },
 });
 
