@@ -5,7 +5,7 @@ import { workflow } from "../workflows";
 import type { Id } from "../_generated/dataModel";
 
 export const startRequest = mutation({
-    args: { address: v.string() },
+    args: { address: v.string(), email: v.string() },
     returns: v.object({
         appraisalRequestId: v.id("appraisal_requests"),
         workflowId: v.string(),
@@ -13,6 +13,7 @@ export const startRequest = mutation({
     handler: async (ctx, args): Promise<any> => {
         const appraisalRequestId: Id<"appraisal_requests"> = await ctx.runMutation(internal.db.mutations.createRequest, {
             address: args.address,
+            email: args.email,
         });
 
         const workflowId = await workflow.start(

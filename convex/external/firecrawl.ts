@@ -1,7 +1,9 @@
 "use node"
 
 import { v, ConvexError } from "convex/values";
-import { internalAction } from "../_generated/server";
+import { internalAction, action, mutation } from "../_generated/server";
+import { ActionCache, removeAll } from "@convex-dev/action-cache";
+import { components, internal } from "../_generated/api";
 import FirecrawlApp from '@mendable/firecrawl-js';
 import { z } from 'zod';
 
@@ -27,6 +29,9 @@ const DEFAULT_CONFIG: Omit<FirecrawlConfig, 'apiKey'> = {
     cacheMaxAge: 172800000, // 2 days in milliseconds
     resultsPerPage: 3,
 };
+
+// Action Cache configuration for property details
+const PROPERTY_DETAILS_CACHE_TTL = 30 * 24 * 60 * 60 * 1000; // 30 days - property details don't change often
 
 // Zod schema for address search results
 const AddressSearchSchema = z.object({
@@ -266,7 +271,7 @@ export const searchAddresses = internalAction({
     },
 });
 
-export const batchScrapePropertyDetailsAction = internalAction({
+export const batchScrapePropertyDetailsPure = internalAction({
     args: {
         accountResults: v.array(v.object({
             address: v.union(v.string(), v.null()),
@@ -304,7 +309,92 @@ export const batchScrapePropertyDetailsAction = internalAction({
         propertyAddress: v.optional(v.string()),
     })),
     handler: async (ctx, args) => {
+        console.log(`Batch scraping ${args.accountResults.length} properties (pure function)`);
         const results = await batchScrapePropertyDetails(args.accountResults);
+        return results;
+    },
+});
+
+const propertyDetailsCache = new ActionCache(components.actionCache, {
+    action: internal.external.firecrawl.batchScrapePropertyDetailsPure,
+    name: "propertyDetails",
+    ttl: PROPERTY_DETAILS_CACHE_TTL,
+});
+
+export const batchScrapePropertyDetailsAction = internalAction({
+    args: {
+        accountResults: v.array(v.object({
+            address: v.union(v.string(), v.null()),
+            accountNumber: v.union(v.string(), v.null())
+        })),
+        force: v.optional(v.boolean())
+    },
+    returns: v.array(v.object({
+        bath: v.optional(v.number()),
+        bedrooms: v.optional(v.number()),
+        subdivision: v.optional(v.string()),
+        fireplaces: v.optional(v.number()),
+        accountNumber: v.optional(v.string()),
+        parcelId: v.optional(v.string()),
+        schoolDistrict: v.optional(v.string()),
+        fireDistrict: v.optional(v.string()),
+        neighborhoodCode: v.optional(v.string()),
+        lotSize: v.optional(v.string()),
+        propertyType: v.optional(v.string()),
+        yearBuilt: v.optional(v.number()),
+        qualityCode: v.optional(v.string()),
+        architecturalType: v.optional(v.string()),
+        exteriorWalls: v.optional(v.string()),
+        totalAreaSqft: v.optional(v.number()),
+        baseAreaSqft: v.optional(v.number()),
+        parkingAreaSqft: v.optional(v.number()),
+        totalRooms: v.optional(v.number()),
+        basementAreaSqft: v.optional(v.number()),
+        finishedBasementAreaSqft: v.optional(v.number()),
+        salesHistory: v.optional(v.array(v.object({
+            previousOwners: v.optional(v.string()),
+            saleDate: v.optional(v.string()),
+            salePrice: v.optional(v.string()),
+            adjustedSalePrice: v.optional(v.string()),
+        })),),
+        propertyAddress: v.optional(v.string()),
+    })),
+    handler: async (ctx, args): Promise<Array<{
+        bath?: number;
+        bedrooms?: number;
+        subdivision?: string;
+        fireplaces?: number;
+        accountNumber?: string;
+        parcelId?: string;
+        schoolDistrict?: string;
+        fireDistrict?: string;
+        neighborhoodCode?: string;
+        lotSize?: string;
+        propertyType?: string;
+        yearBuilt?: number;
+        qualityCode?: string;
+        architecturalType?: string;
+        exteriorWalls?: string;
+        totalAreaSqft?: number;
+        baseAreaSqft?: number;
+        parkingAreaSqft?: number;
+        totalRooms?: number;
+        basementAreaSqft?: number;
+        finishedBasementAreaSqft?: number;
+        salesHistory?: Array<{
+            previousOwners?: string;
+            saleDate?: string;
+            salePrice?: string;
+            adjustedSalePrice?: string;
+        }>;
+        propertyAddress?: string;
+    }>> => {
+        const results = await propertyDetailsCache.fetch(
+            ctx,
+            { accountResults: args.accountResults },
+            { force: args.force }
+        );
+
         return results;
     },
 });

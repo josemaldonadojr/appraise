@@ -1,14 +1,16 @@
 import { v } from "convex/values";
-import { internalMutation } from "../_generated/server";
+import { internalMutation, internalQuery } from "../_generated/server";
 
 export const createRequest = internalMutation({
     args: {
         address: v.string(),
+        email: v.string(),
     },
     returns: v.id("appraisal_requests"),
     handler: async (ctx, args) => {
         return await ctx.db.insert("appraisal_requests", {
             address: args.address,
+            email: args.email,
             status: "running",
         });
     },
@@ -54,6 +56,25 @@ export const markFailed = internalMutation({
     },
 });
 
+
+export const getRequest = internalQuery({
+    args: {
+        appraisalRequestId: v.id("appraisal_requests"),
+    },
+    returns: v.union(v.object({
+        _id: v.id("appraisal_requests"),
+        _creationTime: v.number(),
+        address: v.string(),
+        email: v.string(),
+        status: v.string(),
+        workflowId: v.optional(v.string()),
+        finalResult: v.optional(v.number()),
+        errorDetails: v.optional(v.object({ message: v.string() })),
+    }), v.null()),
+    handler: async (ctx, args) => {
+        return await ctx.db.get(args.appraisalRequestId);
+    },
+});
 
 export const insertProperty = internalMutation({
     args: {

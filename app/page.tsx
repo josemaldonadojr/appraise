@@ -1,7 +1,8 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Home, Building, MapPin, Calculator, Zap, Brain } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { ArrowRight, Home, Building, MapPin, Calculator, Zap, Brain, Mail } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useMutation } from "convex/react"
@@ -16,6 +17,8 @@ export default function HomePage() {
   const startRequest = useMutation(api.appraisals.api.startRequest)
   const [currentRequestId, setCurrentRequestId] = useState<Id<"appraisal_requests"> | null>(null)
   const [currentAddress, setCurrentAddress] = useState<string>("")
+  const [currentEmail, setCurrentEmail] = useState<string>("")
+  const [selectedAddress, setSelectedAddress] = useState<string>("")
   const statusResult = useQuery(
     api.appraisals.api.getRequestStatus,
     currentRequestId ? { appraisalRequestId: currentRequestId } : "skip"
@@ -35,13 +38,22 @@ export default function HomePage() {
     }
   }, [currentRequestId, statusResult?.status, appraisalJson, router, statusResult?.errorDetails])
 
-  const handleAddressSelect = async (address: string) => {
-    const inputAddress = address.trim()
-    if (!inputAddress) return
+  const handleAddressSelect = (address: string) => {
+    setSelectedAddress(address.trim())
+  }
+
+  const handleSubmit = async () => {
+    const inputAddress = selectedAddress.trim()
+    const inputEmail = currentEmail.trim()
+    
+    if (!inputAddress || !inputEmail) return
 
     try {
       setCurrentAddress(inputAddress)
-      const { appraisalRequestId } = await startRequest({ address: inputAddress })
+      const { appraisalRequestId } = await startRequest({ 
+        address: inputAddress,
+        email: inputEmail
+      })
       setCurrentRequestId(appraisalRequestId)
     } catch (err) {
       console.error(err)
@@ -57,6 +69,7 @@ export default function HomePage() {
     if (statusResult?.status === "failed" || statusResult?.status === "done") {
       setCurrentRequestId(null)
       setCurrentAddress("")
+      setSelectedAddress("")
     }
   }
 
@@ -81,8 +94,27 @@ export default function HomePage() {
           </p>
 
           <div className="mt-12 flex justify-center">
-            <div className="w-full max-w-md">
+            <div className="w-full max-w-md space-y-4">
               <MapboxSearch onAddressSelect={handleAddressSelect} />
+              
+              <div className="relative">
+                <Mail className="absolute left-5 top-1/2 transform -translate-y-1/2 text-muted-foreground h-6 w-6" />
+                <Input
+                  type="email"
+                  placeholder="Enter your email address..."
+                  value={currentEmail}
+                  onChange={(e) => setCurrentEmail(e.target.value)}
+                  className="pl-14 py-5 text-lg rounded-2xl border-border/30 bg-background shadow-sm hover:shadow-md focus:shadow-lg transition-all duration-200 focus:border-primary/30 focus:ring-2 focus:ring-primary/10"
+                />
+              </div>
+              
+              <Button
+                onClick={handleSubmit}
+                disabled={!selectedAddress || !currentEmail}
+                className="w-full py-5 text-lg rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Generate Appraisal Report
+              </Button>
             </div>
           </div>
 

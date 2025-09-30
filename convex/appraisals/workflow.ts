@@ -47,7 +47,7 @@ export const appraisalWorkflow = workflow.define({
             });
 
             const propertyDetails = await step.runAction(internal.external.firecrawl.batchScrapePropertyDetailsAction, {
-                accountResults: [mainAccount, ...accountResults]
+                accountResults: [mainAccount, ...accountResults],
             });
 
             const insertPropertyPromises = propertyDetails.map((propertyDetail, index) => {
@@ -104,6 +104,7 @@ export const appraisalWorkflow = workflow.define({
                 status: "done",
             });
 
+            const request = await step.runQuery(internal.db.mutations.getRequest, { appraisalRequestId });
             const { reconciliation, subject } = appraisalResult;
             const { final_value_opinion, indicated_range } = reconciliation;
             const userName = "Jose";
@@ -117,7 +118,8 @@ export const appraisalWorkflow = workflow.define({
                 propertyAddress,
                 estimatedValue,
                 appraisalId: reportId,
-                viewReportUrl
+                viewReportUrl,
+                userEmail: request?.email || "delivered@resend.dev"
             });
         } catch (error) {
             console.error("Appraisal workflow failed:", error);

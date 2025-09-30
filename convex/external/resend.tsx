@@ -170,6 +170,7 @@ export const sendTestEmail = internalAction({
         estimatedValue: v.string(),
         appraisalId: v.string(),
         viewReportUrl: v.string(),
+        userEmail: v.string(),
     },
     handler: async (ctx, args) => {
         const timestamp = new Date().toLocaleString('en-US', {
@@ -197,7 +198,7 @@ export const sendTestEmail = internalAction({
 
         await resend.sendEmail(ctx, {
             from: "results@notify.appraisement.co",
-            to: "josemaldonadobusiness@gmail.com",
+            to: args.userEmail || "delivered@resend.dev",
             subject: "Your appraisal report is ready to view",
             html: html,
         });

@@ -40,6 +40,7 @@ export default defineSchema({
 
   appraisal_requests: defineTable({
     address: v.string(),
+    email: v.string(),
     status: v.string(),
     workflowId: v.optional(v.string()),
     // userId: v.id("users"),
