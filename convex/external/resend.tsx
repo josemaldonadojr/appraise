@@ -28,7 +28,6 @@ export const resend: Resend = new Resend(components.resend, {
 
 const AppraisalReadyEmail = (props: any) => {
     const {
-        userName = "John",
         propertyAddress = "123 Main Street, Anytown, ST 12345",
         estimatedValue = "$425,000 - $475,000",
         confidenceLevel = "Medium",
@@ -51,7 +50,7 @@ const AppraisalReadyEmail = (props: any) => {
                                 Your Property Appraisal is Ready
                             </Heading>
                             <Text className="text-[18px] text-slate-600 m-0 font-light leading-[1.6]">
-                                Hi {userName}, we've completed the automated analysis for your property and your draft report is ready to review.
+                                Hi, we've completed the automated analysis for your property and your draft report is ready to review.
                             </Text>
                         </Section>
 
@@ -165,7 +164,6 @@ const AppraisalReadyEmail = (props: any) => {
 
 export const sendTestEmail = internalAction({
     args: {
-        userName: v.string(),
         propertyAddress: v.string(),
         estimatedValue: v.string(),
         appraisalId: v.string(),
@@ -185,7 +183,6 @@ export const sendTestEmail = internalAction({
         const html = await pretty(
             await render(
                 <AppraisalReadyEmail 
-                    userName={args.userName}
                     propertyAddress={args.propertyAddress}
                     estimatedValue={args.estimatedValue}
                     appraisalId={args.appraisalId}
