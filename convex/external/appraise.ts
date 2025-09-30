@@ -292,7 +292,7 @@ export const appraisePure = internalAction({
         });
 
         const { object } = await generateObject({
-            model: openai('gpt-4o-mini-2024-07-18'),
+            model: openai('gpt-5'),
             schema: AppraiserOutputSchema,
             messages: [
                 {
